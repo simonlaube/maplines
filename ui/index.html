@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script type=module src="map.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+    <link rel="stylesheet" href="main.css">
+
+    <script src="maplibre-gl@2.1.9/dist/maplibre-gl.js"></script>
+    <link href="maplibre-gl@2.1.9/dist/maplibre-gl.css" rel="stylesheet" />
+
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Maplines</h1>
+    <div class="grid-container">
+      <table id="gpx-table">
+        <thead>
+            <th>Name</th>
+            <th>Activity</th>
+            <th>Creator</th>
+            <th>File Name</th>
+        </thead>
+        <tbody id="gpxTableBody"></tbody>
+      </table>
+
+      <div id="map"></div>
+      
+      <!-- <div id="map" class="map"></div> -->
+    </div>
+
+    <button onclick="reload_table()">Click</button>
+  </body>
+</html>
