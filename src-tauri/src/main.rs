@@ -13,7 +13,6 @@ use std::fs;
 use gps_analyzer::AnalyzedGpsFile;
 use gpx::Gpx;
 
-
 fn main() {
   tauri::Builder::default()
     .invoke_handler(tauri::generate_handler![load_analyzed_gpx_files, load_line])
