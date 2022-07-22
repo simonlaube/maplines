@@ -37,13 +37,11 @@ function reload_table() {
                     .then((response) => {
                         console.log(response);
                         var line = map.getSource('gps-line');
-                        if (!line) {
-                            map.addSource('gps-line', {
-                                'type': 'geojson',
-                            });
-                            line = map.getSource('gps-line');
-                        }
                         line.setData(response);
+                        var bbox = [[entry.x_min[0], entry.y_min[1]], [entry.x_max[0], entry.y_max[1]]];
+                        map.fitBounds(bbox, {
+                            padding: { top: 10, bottom: 10, left: 10, right: 10 }
+                        });
                     });
                 });
             });

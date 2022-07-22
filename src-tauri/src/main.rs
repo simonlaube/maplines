@@ -55,16 +55,17 @@ fn load_gps_summaries() -> Vec<GpsSummary> {
     // Analyze Gpx file, write summary and geojson file.
     let g_clone = g.clone();
     if g_clone.as_os_str().to_str().unwrap().ends_with(".gpx") {
-      let agf = GpsSummary::from_gpx(g);
-      agf.write(maplines_paths.summary.clone());
-      gps_summaries.push(agf);
       let mut geo_path = g_json;
       geo_path.set_extension("geojson");
       let file_name = String::from(geo_path.file_name().unwrap().to_str().unwrap());
 
       let mut geo_path = maplines_paths.geojson.clone();
       geo_path.push(file_name.clone());
-      write_gpx_to_geojson(read_gpx(&g_clone,), file_name, geo_path);
+      write_gpx_to_geojson(read_gpx(&g_clone), file_name, geo_path);
+      
+      let agf = GpsSummary::from_gpx(g);
+      agf.write(maplines_paths.summary.clone());
+      gps_summaries.push(agf);
       continue;
     }
 
