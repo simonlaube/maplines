@@ -3,34 +3,40 @@
   windows_subsystem = "windows"
 )]
 
-mod gps_analyzer;
 extern crate dirs;
-extern crate gpx;
 extern crate geo;
+extern crate gpx;
+extern crate geojson;
+
+mod io;
+mod gps_analyzer;
+mod type_converter;
 
 use std::path::PathBuf;
-use std::fs;
-use gps_analyzer::AnalyzedGpsFile;
+use geojson::GeoJson;
+use io::{MaplinesDirPaths, LinePaths};
+use gps_analyzer::{GpsSummary, read_gpx};
+use type_converter::write_gpx_to_geojson;
 use gpx::Gpx;
 
 fn main() {
   tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![load_analyzed_gpx_files, load_line])
+    .invoke_handler(tauri::generate_handler![load_gps_summaries, load_line, load_geojson])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
 
 #[tauri::command]
-fn load_analyzed_gpx_files() -> Vec<AnalyzedGpsFile> {
+fn load_gps_summaries() -> Vec<GpsSummary> {
   let maplines_paths = MaplinesDirPaths::get();
   let gps_paths: Vec<PathBuf> = std::fs::read_dir(maplines_paths.main.clone()).unwrap()
     .into_iter()
     .map(|x| x.unwrap().path()).collect();
-  let json_paths: Vec<PathBuf> = std::fs::read_dir(maplines_paths.analyzed.clone()).unwrap()
+  let summary_paths: Vec<PathBuf> = std::fs::read_dir(maplines_paths.summary.clone()).unwrap()
     .into_iter()
     .map(|x| x.unwrap().path()).collect();
     
-  let mut analyzed_gps_files: Vec<AnalyzedGpsFile> = vec![];
+  let mut gps_summaries: Vec<GpsSummary> = vec![];
 
   for g in gps_paths {
     
@@ -39,25 +45,33 @@ fn load_analyzed_gpx_files() -> Vec<AnalyzedGpsFile> {
     g_json.set_extension("json");
 
     // Gps file already analyzed.
-    if json_paths.iter().any(|j| j.as_path().file_name().unwrap().eq(g_json.as_path().file_name().unwrap())) {
-      let mut json_path_in = maplines_paths.analyzed.clone();
+    if summary_paths.iter().any(|a| a.as_path().file_name().unwrap().eq(g_json.as_path().file_name().unwrap())) {
+      let mut json_path_in = maplines_paths.summary.clone();
       json_path_in.push(g_json.as_path().file_name().unwrap());
-      analyzed_gps_files.push(AnalyzedGpsFile::from_json(json_path_in));
+      gps_summaries.push(GpsSummary::from_json(json_path_in));
       continue;
     }
 
-    // Gpx file has to be analyzed and written to new file.
-    if g.as_os_str().to_str().unwrap().ends_with(".gpx") {
-      let agf = AnalyzedGpsFile::from_gpx(g);
-      agf.write(maplines_paths.analyzed.clone());
-      analyzed_gps_files.push(agf);
+    // Analyze Gpx file, write summary and geojson file.
+    let g_clone = g.clone();
+    if g_clone.as_os_str().to_str().unwrap().ends_with(".gpx") {
+      let agf = GpsSummary::from_gpx(g);
+      agf.write(maplines_paths.summary.clone());
+      gps_summaries.push(agf);
+      let mut geo_path = g_json;
+      geo_path.set_extension("geojson");
+      let file_name = String::from(geo_path.file_name().unwrap().to_str().unwrap());
+
+      let mut geo_path = maplines_paths.geojson.clone();
+      geo_path.push(file_name.clone());
+      write_gpx_to_geojson(read_gpx(&g_clone,), file_name, geo_path);
       continue;
     }
 
     // TODO: Add support for further file types
   }
 
-  analyzed_gps_files
+  gps_summaries
 }
 
 #[tauri::command]
@@ -69,18 +83,8 @@ fn load_line(file_name: String) -> Gpx {
   gpx
 }
 
-struct MaplinesDirPaths {
-  main: PathBuf,
-  analyzed: PathBuf,
-}
-
-impl MaplinesDirPaths {
-  fn get() -> MaplinesDirPaths {
-    let mut main_path = dirs::document_dir().unwrap();
-    main_path.push("maplines");
-    let mut analyzed_path = main_path.clone();
-    analyzed_path.push("analyzed");
-    fs::create_dir_all(analyzed_path.clone());
-    MaplinesDirPaths { main: main_path, analyzed: analyzed_path }
-  }
+#[tauri::command]
+fn load_geojson(file_name: String) -> GeoJson {
+  let mut line_paths = LinePaths::new_from_name(file_name);
+  line_paths.read_geojson().parse::<GeoJson>().unwrap()
 }

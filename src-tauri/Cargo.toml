@@ -21,6 +21,7 @@ tauri = { version = "1.0.4", features = ["api-all"] }
 dirs = "4.0.0"
 geo = "0.22.1"
 gpx = { version = "0.8.6", features = ["use-serde"] }
+geojson = "0.23.0"
 
 [features]
 # by default Tauri runs in production mode

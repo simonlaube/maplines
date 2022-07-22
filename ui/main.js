@@ -16,7 +16,7 @@ function load_line(fn) {
 
 function reload_table() {
     const table_body = document.getElementById("gpxTableBody");
-    invoke('load_analyzed_gpx_files')
+    invoke('load_gps_summaries')
         .then((response) => {
             while(table_body.rows.length > 0) {
                 table_body.deleteRow(0);
@@ -33,28 +33,61 @@ function reload_table() {
                 file_name.innerHTML = entry.file_name;
 
                 row.addEventListener("click", () => {
-                    console.log(entry.file_path);
-                    // load_line(row.cells[3].innerHTML)
-                    // draw_gpx(entry.file_path);
+                    invoke('load_geojson', { fileName: entry.file_name })
+                    .then((response) => {
+                        console.log(response);
+                        var line = map.getSource('gps-line');
+                        if (!line) {
+                            map.addSource('gps-line', {
+                                'type': 'geojson',
+                            });
+                            line = map.getSource('gps-line');
+                        }
+                        line.setData(response);
+                    });
                 });
             });
         });
 }
 
+var map;
 window.onload = init_map;
 function init_map() {
-    var map = new maplibregl.Map({
+    map = new maplibregl.Map({
         container: 'map', // container id
         // style: 'https://demotiles.maplibre.org/style.json', // style URL
         style: 'maplibre-gl@2.1.9/style/normal.json',
         center: [0, 0], // starting position [lng, lat]
         zoom: 1 // starting zoom
+    });
+    map.addControl(new maplibregl.FullscreenControl());
+    map.dragRotate.disable();
+    map.touchZoomRotate.disableRotation();
+    map.addControl(new maplibregl.NavigationControl());
+    map.on('load', function () {
+        map.addSource('gps-line', {
+            'type': 'geojson',
+            'data': {
+                'type': 'Feature',
+                'properties': {},
+                'geometry': {
+                    'type': 'LineString',
+                    'coordinates': []
+                }
+            }
         });
-        map.addControl(new maplibregl.FullscreenControl());
-        map.dragRotate.disable();
-        map.touchZoomRotate.disableRotation();
-        map.addControl(new maplibregl.NavigationControl());
-}
-
-function draw_gpx(filePath) {
+        map.addLayer({
+            'id': 'gps-line',
+            'type': 'line',
+            'source': 'gps-line',
+            'layout': {
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            'paint': {
+                'line-color': '#9f2dcf',
+                'line-width': 3
+            }
+        });
+    });
 }

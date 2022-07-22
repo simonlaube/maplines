@@ -1,4 +1,3 @@
-use geo;
 use gpx;
 use serde::{Serialize, Deserialize};
 
@@ -8,14 +7,16 @@ use std::fs::File;
 use std::path::PathBuf;
 use std::io::Write;
 
+use crate::io::LinePaths;
 use gpx::read;
 use gpx::{Gpx, Track, TrackSegment};
 
 /// same as Track but without links and segments
 #[derive(Serialize, Deserialize, Debug)]
-pub struct AnalyzedGpsFile {
+pub struct GpsSummary {
     pub file_name: Option<String>,
-    pub file_path: Option<String>,
+    pub gpx_path: Option<String>,
+    pub geojson_path: Option<String>,
     pub name: Option<String>,
     pub comment: Option<String>,
     pub description: Option<String>,
@@ -23,6 +24,7 @@ pub struct AnalyzedGpsFile {
     pub _type: Option<String>,
     pub number: Option<u32>,
     pub creator: Option<String>,
+    pub center: Option<(f64, f64)>,
 
     // Maximal elevation of track
     // pub max_ele: f32,
@@ -62,18 +64,20 @@ pub struct AnalyzedGpsFile {
 
 }
 
-impl AnalyzedGpsFile {
+impl GpsSummary {
 
-    pub fn from_gpx(gpx_path_in: PathBuf) -> AnalyzedGpsFile {
+    pub fn from_gpx(gpx_path_in: PathBuf) -> GpsSummary {
         
         let gpx = read_gpx(&gpx_path_in);
         let track: Track = gpx.tracks[0].clone();
-        let file_name = gpx_path_in.file_name().unwrap();
-        let file_path = gpx_path_in.to_str().unwrap().to_string();
+        let line_paths = LinePaths::new_from_gpx(gpx_path_in.clone());
+        let gpx_path = gpx_path_in.to_str().unwrap().to_string();
+        let geojson_path = line_paths.clone().geojson_path().to_str().unwrap().to_string();
 
-        AnalyzedGpsFile {
-            file_name: Some(String::from(file_name.to_str().unwrap())),
-            file_path: Some(file_path),
+        GpsSummary {
+            file_name: Some(line_paths.file_name.clone()),
+            gpx_path: Some(gpx_path),
+            geojson_path: Some(geojson_path),
             name: track.name,
             comment: track.comment,
             description: track.description,
@@ -81,21 +85,22 @@ impl AnalyzedGpsFile {
             _type: track._type,
             number: track.number,
             creator: gpx.creator,
+            center: None,
         }
     }
     
-    pub fn from_json(json_path_in: PathBuf) -> AnalyzedGpsFile {
-        let agf: AnalyzedGpsFile = serde_json::from_str(fs::read_to_string(json_path_in).unwrap().as_str()).unwrap();
+    pub fn from_json(json_path_in: PathBuf) -> GpsSummary {
+        let agf: GpsSummary = serde_json::from_str(fs::read_to_string(json_path_in).unwrap().as_str()).unwrap();
         agf
     }
 
-    pub fn write(&self, analized_path: PathBuf) {
-        let mut path = analized_path.clone();
+    pub fn write(&self, summary_path: PathBuf) {
+        let mut path = summary_path.clone();
         path.push(self.file_name.clone().unwrap());
         path.set_extension("json");
         let mut file = File::create(path).unwrap();
         let json = serde_json::to_string(self).unwrap();
-        write!(file, "{}", json);
+        write!(file, "{}", json).unwrap();
     }
 }
 
@@ -105,8 +110,4 @@ pub fn read_gpx(gpx_path_in: &PathBuf) -> Gpx {
     
     let gpx: Gpx = read(reader).unwrap();
     gpx
-}
-
-pub fn gpx_to_geojson(gpx: Gpx) {
-    todo!();
 }
