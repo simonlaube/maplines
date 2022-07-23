@@ -1,3 +1,26 @@
+@font-face {
+    font-family: 'Vela-Sans';
+    src: url('fonts/velasans/VelaSans-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Vela-Sans';
+    src: url('fonts/velasans/VelaSans-Medium.ttf') format('truetype');
+    font-weight: bolder;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Vela-Sans';
+    src: url('fonts/velasans/VelaSans-SemiBold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+h1 {
+    font-family: 'Epilogue';
+    font-size:medium;
+}
 html {
     height: 100%;
 }
@@ -20,6 +43,15 @@ body {
     width: 100%;
 }
 
+#title-bar {
+    grid-column-start: 1;
+    grid-column-end: 3;
+    grid-row-start: 1;
+    grid-row-end: 2;
+    padding: 0;
+    margin: 0;
+}
+
 #gpx-table {
     grid-column-start: 1;
     grid-column-end: 2;
@@ -27,6 +59,7 @@ body {
     grid-row-end: 3;
     border-collapse: collapse;
     padding: 0;
+    font-family: 'Epilogue';
 }
 
 #map {
@@ -62,11 +95,17 @@ td {
     height: 3rem;
     max-height: 3rem;
     padding: 0.2rem;
+    font-size: small;
+    font-family: 'Vela-Sans';
+    font-weight: normal;
 }
 
 th {
     border-bottom: 1px solid #ddd;
     padding: 0.2rem;
+    font-family: 'Vela-Sans';
+    font-weight: bold;
+    font-size:smaller;
 }
 table td + td { border-left: 1px solid #ddd; }
 table th + th { border-left: 1px solid #ddd; }

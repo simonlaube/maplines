@@ -16,6 +16,7 @@ function load_line(fn) {
 
 function reload_table() {
     const table_body = document.getElementById("gpxTableBody");
+    const row_objects = {};
     invoke('load_gps_summaries')
         .then((response) => {
             while(table_body.rows.length > 0) {
@@ -23,17 +24,19 @@ function reload_table() {
             }
             response.forEach( entry => {
                 let row = table_body.insertRow();
-                let time = row.insertCell(0);
+                row_objects[entry.file_name] = entry;
+                let file_name = row.insertCell(0);
+                file_name.innerHTML = entry.file_name;
+                file_name.style.display = "none";
+                let time = row.insertCell(1);
                 let datetime = new Date(entry.start_time);
-                time.innerHTML = datetime.toISOString()/*.toLocaleDateString()*/;
-                let name = row.insertCell(1);
+                time.innerHTML = datetime.toLocaleDateString()/*.toLocaleDateString()*/;
+                let name = row.insertCell(2);
                 name.innerHTML = entry.name;
-                let type = row.insertCell(2);
+                let type = row.insertCell(3);
                 type.innerHTML = entry._type;
-                let creator = row.insertCell(3);
+                let creator = row.insertCell(4);
                 creator.innerHTML = entry.creator;
-                // let file_name = row.insertCell(4);
-                // file_name.innerHTML = entry.file_name;
 
                 row.addEventListener("click", () => {
                     invoke('load_geojson', { fileName: entry.file_name })
@@ -48,7 +51,7 @@ function reload_table() {
                     });
                 });
             });
-            sortRowsDate(document.getElementById("gpx-table"), 0);
+            sortRowsDate(document.getElementById("gpx-table"), 0, row_objects);
         });
 }
 
@@ -95,12 +98,12 @@ function init_map() {
     });
 }
 
-function sortRowsDate(table, columnIndex) {
+function sortRowsDate(table, columnIndex, row_objects) {
     var rows = table.querySelectorAll("tbody tr");
     var sel = "td:nth-child(" + (columnIndex + 1) + ")";
     var values = [];
     for (var i = 0; i < rows.length; i++) {
-        values.push({ value: rows[i].querySelector(sel).innerText,
+        values.push({ value: row_objects[rows[i].querySelector(sel).innerText],
                         row: rows[i] });
     }
     values.sort(comparatorDate);
@@ -110,7 +113,8 @@ function sortRowsDate(table, columnIndex) {
 }
 
 function comparatorDate(a, b) {
-    let a_date = new Date(a.value);
-    let b_date = new Date(b.value);
+    let a_date = new Date(a.value.start_time);
+    let b_date = new Date(b.value.start_time);
+    console.log(a.start_time);
     return (a_date > b_date) - (a_date < b_date);
 }
