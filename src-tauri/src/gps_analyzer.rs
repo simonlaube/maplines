@@ -13,12 +13,14 @@ use geojson::{GeoJson, Value, Feature};
 use gpx::read;
 use gpx::{Gpx, Track, TrackSegment};
 
+
 /// same as Track but without links and segments
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GpsSummary {
     pub file_name: Option<String>,
     pub gpx_path: Option<String>,
     pub geojson_path: Option<String>,
+    pub start_time: Option<String>,
     pub name: Option<String>,
     pub comment: Option<String>,
     pub description: Option<String>,
@@ -74,6 +76,7 @@ impl GpsSummary {
     pub fn from_gpx(gpx_path_in: PathBuf) -> GpsSummary {
         
         let gpx = read_gpx(&gpx_path_in);
+        let start_time = gpx.tracks[0].segments[0].points[0].time.unwrap().format().unwrap();
         let track: Track = gpx.tracks[0].clone();
         let line_paths = LinePaths::new_from_gpx(gpx_path_in.clone());
         let gpx_path = gpx_path_in.to_str().unwrap().to_string();
@@ -95,6 +98,7 @@ impl GpsSummary {
             file_name: Some(line_paths.file_name.clone()),
             gpx_path: Some(gpx_path),
             geojson_path: Some(geojson_path),
+            start_time: Some(start_time),
             name: track.name,
             comment: track.comment,
             description: track.description,

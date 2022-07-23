@@ -29,7 +29,6 @@ pub fn write_gpx_to_geojson(gpx: Gpx, file_name: String, file_path: PathBuf) {
         foreign_members: None,
     });
 
-    println!("{:?}", file_path);
     let mut file = File::create(file_path).unwrap();
     write!(file, "{}", geojson.to_string()).unwrap();
 

@@ -101,7 +101,6 @@ impl LinePaths {
     }
 
     pub fn read_geojson(mut self) -> String {
-        println!("{:?}", self.clone().geojson_path());
         fs::read_to_string(self.geojson_path()).unwrap().as_str().to_string()
     }
   }

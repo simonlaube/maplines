@@ -5,31 +5,47 @@ html {
 body {
     display: flexbox;
     height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
 }
 .grid-container {
     display: grid;
     grid-template-columns: 50% 50%;
-    grid-template-rows: 100%;
-    column-gap: .5rem;
-    height: 80%;
+    grid-template-rows: 5% 90% 5%;
+    column-gap: 0.2rem;
+    row-gap: 0;
+    height: 100%;
     width: 100%;
 }
 
 #gpx-table {
     grid-column-start: 1;
     grid-column-end: 2;
-    grid-row-start: 1;
-    grid-row-end: 2;
+    grid-row-start: 2;
+    grid-row-end: 3;
     border-collapse: collapse;
+    padding: 0;
 }
 
 #map {
     grid-column-start: 2;
     grid-column-end: 3;
-    grid-row-start: 1;
-    grid-row-end: 2;
+    grid-row-start: 2;
+    grid-row-end: 3;
     height: 100%;
     width: 100%;
+    padding: 0;
+}
+
+#reload-tbl-btn {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 3;
+    grid-row-end: 4;
+    padding: 0;
+    margin: 0;
 }
 /*
 .scroll-container-xy {

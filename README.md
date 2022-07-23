@@ -14,6 +14,7 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] group gps lines
 - [ ] add route creation
 - [ ] display heat map
+- [ ] replace unwraps with results
 
 ## Future Design Improvements
 - [ ] map more optimized for biking (Less prominent Highways...)

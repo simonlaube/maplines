@@ -23,14 +23,17 @@ function reload_table() {
             }
             response.forEach( entry => {
                 let row = table_body.insertRow();
-                let name = row.insertCell(0);
+                let time = row.insertCell(0);
+                let datetime = new Date(entry.start_time);
+                time.innerHTML = datetime.toISOString()/*.toLocaleDateString()*/;
+                let name = row.insertCell(1);
                 name.innerHTML = entry.name;
-                let type = row.insertCell(1);
+                let type = row.insertCell(2);
                 type.innerHTML = entry._type;
-                let creator = row.insertCell(2);
+                let creator = row.insertCell(3);
                 creator.innerHTML = entry.creator;
-                let file_name = row.insertCell(3);
-                file_name.innerHTML = entry.file_name;
+                // let file_name = row.insertCell(4);
+                // file_name.innerHTML = entry.file_name;
 
                 row.addEventListener("click", () => {
                     invoke('load_geojson', { fileName: entry.file_name })
@@ -40,11 +43,12 @@ function reload_table() {
                         line.setData(response);
                         var bbox = [[entry.x_min[0], entry.y_min[1]], [entry.x_max[0], entry.y_max[1]]];
                         map.fitBounds(bbox, {
-                            padding: { top: 10, bottom: 10, left: 10, right: 10 }
+                            padding: { top: 25, bottom: 25, left: 25, right: 25 }
                         });
                     });
                 });
             });
+            sortRowsDate(document.getElementById("gpx-table"), 0);
         });
 }
 
@@ -55,6 +59,7 @@ function init_map() {
         container: 'map', // container id
         // style: 'https://demotiles.maplibre.org/style.json', // style URL
         style: 'maplibre-gl@2.1.9/style/normal.json',
+        // style: 'https://api.maptiler.com/maps/hybrid/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL',
         center: [0, 0], // starting position [lng, lat]
         zoom: 1 // starting zoom
     });
@@ -88,4 +93,24 @@ function init_map() {
             }
         });
     });
+}
+
+function sortRowsDate(table, columnIndex) {
+    var rows = table.querySelectorAll("tbody tr");
+    var sel = "td:nth-child(" + (columnIndex + 1) + ")";
+    var values = [];
+    for (var i = 0; i < rows.length; i++) {
+        values.push({ value: rows[i].querySelector(sel).innerText,
+                        row: rows[i] });
+    }
+    values.sort(comparatorDate);
+    for (var i = 0; i < values.length; i++) {
+        table.querySelector("tbody").appendChild(values[i].row);
+    }
+}
+
+function comparatorDate(a, b) {
+    let a_date = new Date(a.value);
+    let b_date = new Date(b.value);
+    return (a_date > b_date) - (a_date < b_date);
 }

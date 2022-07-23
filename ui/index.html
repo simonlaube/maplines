@@ -14,14 +14,15 @@
     <title>Document</title>
   </head>
   <body>
-    <h1>Maplines</h1>
     <div class="grid-container">
+      
+    
       <table id="gpx-table">
         <thead>
-            <th>Name</th>
-            <th>Activity</th>
-            <th>Creator</th>
-            <th>File Name</th>
+          <th>Date</th>
+          <th>Name</th>
+          <th>Activity</th>
+          <th>Creator</th>
         </thead>
         <tbody id="gpxTableBody"></tbody>
       </table>
@@ -29,8 +30,7 @@
       <div id="map"></div>
       
       <!-- <div id="map" class="map"></div> -->
+      <button id="reload-tbl-btn" onclick="reload_table()">Click</button>
     </div>
-
-    <button onclick="reload_table()">Click</button>
   </body>
 </html>
