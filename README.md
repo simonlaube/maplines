@@ -4,7 +4,7 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 ## Future features
 - [x] add gpx to geojson conversion
 - [x] draw line on map
-- [ ] parse garmin fit files to gpx
+- [ ] load activities from garmin / strava...
 - [ ] reduce number of gps points per line
 - [ ] add profile calculation
 - [ ] add speed calculation
