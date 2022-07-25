@@ -17,6 +17,20 @@
     font-style: normal;
 }
 
+@font-face {
+    font-family: 'PT-Root-UI';
+    src: url('fonts/pt_root_ui/PT\ Root\ UI_Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'PT-Root-UI';
+    src: url('fonts/pt_root_ui/PT\ Root\ UI_Medium.otf') format('opentype');
+    font-weight: bolder;
+    font-style: normal;
+}
+
 h1 {
     font-family: 'Epilogue';
     font-size:medium;
@@ -70,11 +84,16 @@ body {
     min-width: 100%;
 }
 
-#map {
+#map-wrapper {
     grid-column-start: 2;
     grid-column-end: 3;
     grid-row-start: 2;
     grid-row-end: 3;
+
+    padding-right: .4rem;
+}
+
+#map {
     height: 100%;
     width: 100%;
     padding: 0;
@@ -91,7 +110,7 @@ body {
 
 td {
     height: 2rem;
-    font-family: 'Vela-Sans';
+    font-family: 'PT-Root-UI';
     font-weight: normal;
     font-size: small;
 }
@@ -115,6 +134,12 @@ table th + th { border-left: 1px solid #ddd; }*/
 tr:nth-child(odd) { background-color: #fff; }
 tr:nth-child(even) { background-color: #f2f2f2; }
 tbody tr:hover * {
-    background-color: #e2e2e2;
+    background-color: #efefef;
     cursor: pointer;
+}
+
+tbody tr:hover td {
+    font-family: 'PT-Root-UI';
+    font-weight: bold;
+    letter-spacing: -1px;
 }
