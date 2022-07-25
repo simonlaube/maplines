@@ -30,7 +30,7 @@ function reload_table() {
                 file_name.style.display = "none";
                 let time = row.insertCell(1);
                 let datetime = new Date(entry.start_time);
-                time.innerHTML = datetime.toLocaleDateString()/*.toLocaleDateString()*/;
+                time.innerHTML = datetime.toLocaleDateString();
                 let name = row.insertCell(2);
                 name.innerHTML = entry.name;
                 let type = row.insertCell(3);

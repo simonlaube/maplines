@@ -18,5 +18,5 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] replace unwraps with results
 
 ## Future Design Improvements
-- [ ] map more optimized for biking (Less prominent Highways...)
+- [ ] map more optimized for biking (Less prominent Highways, more focus on cycling ways...)
 - [ ] improve table design
