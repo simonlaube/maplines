@@ -116,5 +116,5 @@ function comparatorDate(a, b) {
     let a_date = new Date(a.value.start_time);
     let b_date = new Date(b.value.start_time);
     console.log(a.start_time);
-    return (a_date > b_date) - (a_date < b_date);
+    return (a_date < b_date) - (a_date > b_date);
 }
