@@ -63,6 +63,7 @@ body {
     grid-row-end: 2;
     padding: 0;
     margin: 0;
+    font-family: 'PT-Root-UI';
 }
 
 #gpx-table-wrapper {
@@ -99,14 +100,17 @@ body {
     padding: 0;
 }
 
-#reload-tbl-btn {
+#button-wrapper-footer {
     grid-column-start: 1;
     grid-column-end: 2;
     grid-row-start: 3;
     grid-row-end: 4;
-    padding: 0;
-    margin: 0;
 }
+/*
+#reload-tbl-btn {
+    align-self: left;
+}
+*/
 
 td {
     height: 2rem;

@@ -58,6 +58,7 @@ function reload_table() {
 var map;
 window.onload = init_map;
 function init_map() {
+    reload_table();
     map = new maplibregl.Map({
         container: 'map', // container id
         // style: 'https://demotiles.maplibre.org/style.json', // style URL

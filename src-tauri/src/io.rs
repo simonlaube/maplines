@@ -1,5 +1,4 @@
 use std::fs;
-use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
 pub struct MaplinesDirPaths {

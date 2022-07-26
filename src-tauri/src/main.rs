@@ -7,10 +7,14 @@ extern crate dirs;
 extern crate geo;
 extern crate gpx;
 extern crate geojson;
+extern crate time;
 
 mod io;
+mod import;
 mod gps_analyzer;
+mod track_analysis;
 mod type_converter;
+mod paths;
 
 use std::path::PathBuf;
 use geojson::GeoJson;
@@ -18,12 +22,49 @@ use io::{MaplinesDirPaths, LinePaths};
 use gps_analyzer::{GpsSummary, read_gpx};
 use type_converter::write_gpx_to_geojson;
 use gpx::Gpx;
+use tauri::api::dialog;
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
+
+const ANALYSIS_VERSION: i32 = 1;
 
 fn main() {
+  let version_item = CustomMenuItem::new("version".to_string(), "Version");
+  let main_menu = Submenu::new("Main", Menu::new()
+  .add_item(version_item));
+  //let menu = Menu::new().add_item(open);
+    //.add_submenu(fileMenu)
+    //.add_native_item(MenuItem::Separator)
+    //.add_native_item(MenuItem::Quit);
+  let import_gpx = CustomMenuItem::new("gpx".to_string(), "Import GPX Files");
+  let import_direct = CustomMenuItem::new("direct".to_string(), "Import from GPS Device");
+  let mut open_menu = Submenu::new("Open", Menu::new().add_item(import_gpx).add_item(import_direct));
+
   tauri::Builder::default()
+    .menu(Menu::new().add_submenu(main_menu).add_submenu(open_menu))
+    .on_menu_event(|event| match event.menu_item_id() {
+      "gpx" => {
+        dialog::FileDialogBuilder::default()
+          .add_filter("GPS", &["gpx"])
+          .pick_file(|path_buf| match path_buf {
+            Some(p) => {}
+            _ => {}
+          });
+      }
+      "direct" => {
+        dialog::FileDialogBuilder::default()
+          .add_filter("GPS", &["fit", "FIT"])
+          .pick_file(|path_buf| match path_buf {
+            Some(p) => {}
+            _ => {}
+          });
+      }
+      _ => {}
+    })
     .invoke_handler(tauri::generate_handler![load_gps_summaries, load_line, load_geojson])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
+  paths::create_dirs_if_not_exist();
+
 }
 
 #[tauri::command]
@@ -62,7 +103,7 @@ fn load_gps_summaries() -> Vec<GpsSummary> {
       let mut geo_path = maplines_paths.geojson.clone();
       geo_path.push(file_name.clone());
       write_gpx_to_geojson(read_gpx(&g_clone), file_name, geo_path);
-      
+
       let agf = GpsSummary::from_gpx(g);
       agf.write(maplines_paths.summary.clone());
       gps_summaries.push(agf);
