@@ -3,11 +3,10 @@ use geo::{self, Extremes};
 use gpx::{Gpx, Track, read};
 use ulid::Ulid;
 use time::{OffsetDateTime, format_description::well_known::Rfc3339};
-use serde_xml_rs::to_string;
 
 use std::path::PathBuf;
 use std::fs::File;
-use std::io::{self, Write, BufReader};
+use std::io::{self, Write, BufReader, BufWriter};
 
 use crate::{track_analysis::TrackAnalysis, type_converter::gpx_to_geojson};
 use crate::paths;
@@ -29,6 +28,7 @@ pub fn gpx(gpx_path: &PathBuf) -> Result<TrackAnalysis, io::Error> {
     // analyze geo data
     let geojson = gpx_to_geojson(&gpx, "placeholder");
     write_geojson(&geojson, ulid.clone().to_string().as_str())?;
+    write_gpx(&gpx, &ulid.to_string())?;
     let feature: Feature = Feature::try_from(geojson).unwrap();
     let gj_geometry: geojson::Geometry = feature.geometry.unwrap();
 
@@ -66,7 +66,7 @@ pub fn fit() {
 }
 
 fn optimize_gpx(gpx: &Gpx) {
-    todo!("reduce number of track points");
+    // todo!("reduce number of track points");
 }
 
 fn write_track_analysis(ta: &TrackAnalysis) -> Result<(), io::Error> {
@@ -81,14 +81,19 @@ fn write_gpx(gpx: &Gpx, ulid: &str) -> Result<(), io::Error> {
     let mut path = paths::gpx();
     path.push(ulid);
     path.set_extension("gpx");
-    write_file(path, to_string(gpx).unwrap());
+    println!("{:?}", &path);
+    //write_file(path, serde_json::to_string(gpx)?);
+    let file = File::create(path)?;
+    let writer = BufWriter::new(file);
+    gpx::write(gpx, writer).unwrap();
+    // write_file(path, serde_xml_rs::to_string(gpx).unwrap());
     Ok(())
 }
 
 fn write_geojson(geojson: &GeoJson, ulid: &str) -> Result<(), io::Error> {
     let mut path = paths::geojson();
     path.push(ulid);
-    path.set_extension("gpx");
+    path.set_extension("geojson");
     write_file(path, geojson.to_string());
     Ok(())
 }

@@ -28,6 +28,7 @@ use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 const ANALYSIS_VERSION: i32 = 1;
 
 fn main() {
+  paths::create_dirs_if_not_exist();
   let version_item = CustomMenuItem::new("version".to_string(), "Version");
   let main_menu = Submenu::new("Main", Menu::new()
   .add_item(version_item));
@@ -42,11 +43,16 @@ fn main() {
   tauri::Builder::default()
     .menu(Menu::new().add_submenu(main_menu).add_submenu(open_menu))
     .on_menu_event(|event| match event.menu_item_id() {
+      "version" => {
+        println!("{}", option_env!("CARGO_PKG_VERSION").unwrap());
+      }
       "gpx" => {
         dialog::FileDialogBuilder::default()
           .add_filter("GPS", &["gpx"])
           .pick_file(|path_buf| match path_buf {
-            Some(p) => {}
+            Some(p) => {
+              import::gpx(&p).unwrap();
+            }
             _ => {}
           });
       }
