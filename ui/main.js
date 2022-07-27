@@ -6,28 +6,20 @@ function list_gpx_files() {
         .then((response) => console.log(response))
 }
 
-function load_line(fn) {
-    invoke('load_line', { fileName: fn })
-        .then((response) => {
-            console.log(response);
-            draw_gpx(response);
-        })
-}
-
 function reload_table() {
     const table_body = document.getElementById("gpxTableBody");
     const row_objects = {};
-    invoke('load_gps_summaries')
+    invoke('load_track_analysis')
         .then((response) => {
             while(table_body.rows.length > 0) {
                 table_body.deleteRow(0);
             }
             response.forEach( entry => {
                 let row = table_body.insertRow();
-                row_objects[entry.file_name] = entry;
-                let file_name = row.insertCell(0);
-                file_name.innerHTML = entry.file_name;
-                file_name.style.display = "none";
+                row_objects[entry.ulid] = entry;
+                let ulid = row.insertCell(0);
+                ulid.innerHTML = entry.ulid;
+                ulid.style.display = "none"; // used to identify row but don't display
                 let time = row.insertCell(1);
                 let datetime = new Date(entry.start_time);
                 time.innerHTML = datetime.toLocaleDateString();
@@ -39,7 +31,7 @@ function reload_table() {
                 creator.innerHTML = entry.creator;
 
                 row.addEventListener("click", () => {
-                    invoke('load_geojson', { fileName: entry.file_name })
+                    invoke('load_geojson', { ulid: entry.ulid })
                     .then((response) => {
                         console.log(response);
                         var line = map.getSource('gps-line');

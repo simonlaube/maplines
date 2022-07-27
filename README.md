@@ -10,12 +10,11 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] try to approximate gps lines to streets of OSM
 - [ ] add detailed analysis of tracks (profile & speed calculation, mountain category detection, rounds)
 - [ ] add activity types
-- [ ] refactor importing gps files (import by copying and analyzing original files from within program)
+- [x] refactor importing gps files (import by copying and analyzing original files from within program)
 - [ ] display multiple gps lines (select in table)
 - [ ] group gps lines
 - [ ] add route creation
 - [ ] display heat map
-- [ ] replace unwraps with results
 - [ ] distinction of recorded tracks and planned tracks
 
 ## More Distant Future Features
