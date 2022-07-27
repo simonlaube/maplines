@@ -18,10 +18,8 @@ use std::fs;
 use std::path::PathBuf;
 use geojson::GeoJson;
 use track_analysis::TrackAnalysis;
-use type_converter::write_gpx_to_geojson;
-use gpx::Gpx;
 use tauri::api::dialog;
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
+use tauri::{CustomMenuItem, Menu, Submenu, Manager, GlobalWindowEvent};
 
 const ANALYSIS_VERSION: i32 = 1;
 
@@ -34,7 +32,7 @@ fn main() {
     //.add_submenu(fileMenu)
     //.add_native_item(MenuItem::Separator)
     //.add_native_item(MenuItem::Quit);
-  let import_gpx = CustomMenuItem::new("gpx".to_string(), "Import GPX Files");
+  let import_gpx = CustomMenuItem::new("gpx".to_string(), "Import GPX Files...");
   let import_direct = CustomMenuItem::new("direct".to_string(), "Import from GPS Device");
   let mut open_menu = Submenu::new("Open", Menu::new().add_item(import_gpx).add_item(import_direct));
 
@@ -47,12 +45,24 @@ fn main() {
       "gpx" => {
         dialog::FileDialogBuilder::default()
           .add_filter("GPS", &["gpx"])
-          .pick_file(|path_buf| match path_buf {
+          /*.pick_file(move |path_buf| match path_buf {
             Some(p) => {
               import::gpx(&p).unwrap();
+              event.window().emit("track_import", "payload").unwrap();
             }
-            _ => {}
-          });
+            _ => { dbg!("gpx file could not be imported."); },
+          });*/
+          .pick_files(move |file_paths| {
+            match file_paths {
+              Some(vec_fp) => {
+                for fp in vec_fp {
+                  let track_analysis = import::gpx(&fp).unwrap();
+                  event.window().emit("track_import", track_analysis).unwrap();
+                }
+              }
+              _ => { dbg!("gpx file could not be imported."); },
+            }
+          })
       }
       "direct" => {
         dialog::FileDialogBuilder::default()
@@ -60,7 +70,7 @@ fn main() {
           .pick_file(|path_buf| match path_buf {
             Some(p) => {}
             _ => {}
-          });
+          })
       }
       _ => {}
     })

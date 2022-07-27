@@ -3,7 +3,7 @@ use serde::{Serialize, Deserialize};
 use std::path::PathBuf;
 use std::fs;
 /// same as Track but without links and segments
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TrackAnalysis {
     pub version: i32,
     pub ulid: String,
