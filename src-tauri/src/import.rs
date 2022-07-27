@@ -82,11 +82,9 @@ fn write_gpx(gpx: &Gpx, ulid: &str) -> Result<(), io::Error> {
     path.push(ulid);
     path.set_extension("gpx");
     println!("{:?}", &path);
-    //write_file(path, serde_json::to_string(gpx)?);
     let file = File::create(path)?;
     let writer = BufWriter::new(file);
     gpx::write(gpx, writer).unwrap();
-    // write_file(path, serde_xml_rs::to_string(gpx).unwrap());
     Ok(())
 }
 

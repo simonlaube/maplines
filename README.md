@@ -32,3 +32,6 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] map more optimized for biking, hiking, skiing (Less prominent Highways, more focus on cycling ways...)
 - [x] improve table design
 - [ ] maplines logo
+
+## Changes to Consider (No immediate priority)
+- [ ] use cbor instead of json / geojson / gpx
