@@ -1,19 +1,18 @@
-use geojson::{GeoJson, Feature, Value};
-use geo::{self, Extremes};
+use geojson::{GeoJson};
 use geo_types::Point;
 use gpx::{Gpx, TrackSegment, Track, read, Waypoint};
 use gpx::Time;
 use ulid::Ulid;
-use time::{OffsetDateTime, format_description::well_known::Rfc3339};
+use time::{OffsetDateTime};
 use chrono::prelude::{DateTime, Utc};
-use fitparser::{profile, ErrorKind};
+use fitparser::{profile};
 
 use std::path::PathBuf;
 use std::fs::File;
 use std::io::{self, Write, BufReader, BufWriter};
 
 use crate::type_converter::gpx_to_geojson;
-use crate::track_analysis::{TrackAnalysis, Activity, self};
+use crate::track_analysis::{TrackAnalysis, Activity};
 use crate::paths;
 use crate::errors::ImportError;
 
@@ -30,7 +29,6 @@ pub fn gpx(gpx_path: &PathBuf) -> Result<TrackAnalysis, io::Error> {
     // TODO: Check if start_time already present in previous tracks
     let ulid = Ulid::from_datetime(start_time.into());
     let track: Track = gpx.tracks[0].clone();
-    let _type = activity_type_from_track(&track);
     
     // analyze geo data
     let geojson = gpx_to_geojson(&gpx, "placeholder");
@@ -126,65 +124,9 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
     let geojson = gpx_to_geojson(&gpx, "placeholder");
     write_geojson(&geojson, ulid.clone().to_string().as_str());
     write_gpx(&gpx, &ulid.to_string());
-    
-    let _type = activity_type_from_track(&gpx.tracks[0]);
 
     let track_analysis = TrackAnalysis::from_import(&ulid, &start_time, &gpx.tracks[0], gpx.creator, geojson, Some(activity));
     Ok(track_analysis)
-}
-
-fn activity_type_from_track(track: &Track) -> Activity {
-    match &track._type {
-        Some(t) => {
-            match t.as_str() {
-                // Strava Activity Numbering (experimental, may possibly be inaccurate)
-                "1" => Activity::Cycling,
-                "4" => Activity::Hiking,
-                "6" => Activity::InlineSkating,
-                "7" => Activity::CrossCountrySkiing,
-                "9" => Activity::Running,
-                "10" => Activity::Hiking, // walk
-                "16" => Activity::Swimming,
-                _ => Activity::Generic,
-                /*
-                    1: Ride
-                    2: Alpine Ski
-                    3: Backcountry Ski
-                    4: Hike
-                    5: Ice Skate
-                    6: Inline Skate
-                    7: Nordic Ski
-                    8: Roller Ski
-                    9: Run
-                    10: Walk
-                    11: Workout
-                    12: Snowboard
-                    13: Snowshoe
-                    14: Kitesurf
-                    15: Windsurf
-                    16: Swim
-                    17: Virtual Ride
-                    18: E-Bike Ride
-                    19: Velomobile
-                    21: Canoe
-                    22: Kayaking
-                    23: Rowing
-                    24: Stand Up Paddling
-                    25: Surfing
-                    26: Crossfit
-                    27: Elliptical
-                    28: Rock Climb
-                    29: Stair-Stepper
-                    30: Weight Training
-                    31: Yoga
-                    51: Handcycle
-                    52: Wheelchair
-                    53: Virtual Run
-                 */
-            }
-        }
-        None => Activity::Generic
-    }
 }
 
 fn optimize_gpx(gpx: &Gpx) {
