@@ -5,12 +5,13 @@ const { emit, listen } = window.__TAURI__.event;
 var map;
 var table_body;
 var row_objects;
+var selected_rows;
 
 window.onload = init;
 
 function init() {
     init_map();
-    
+    selected_rows = [];
 }
 
 listen("track_import", ev => {
@@ -55,7 +56,13 @@ function add_to_table(entry, sort) {
     let creator = row.insertCell(4);
     creator.innerHTML = entry.creator;
 
-    row.addEventListener("click", () => {
+    row.addEventListener("click", (event) => {
+        /*if (!event.shiftKey) {
+            clear_table_selection();
+            selected_rows = [];
+        }
+        selected_rows.push(row);
+        row.style.background = '#f55';*/
         invoke('load_geojson', { ulid: entry.ulid })
         .then((response) => {
             console.log(response);
@@ -69,6 +76,13 @@ function add_to_table(entry, sort) {
     });
     if (sort) {
         sortRowsDate(document.getElementById("gpx-table"), 0, row_objects);
+    }
+}
+
+function clear_table_selection() {
+    for (r in selected_rows) {
+        console.log(r);
+        r.style.color = "";
     }
 }
 

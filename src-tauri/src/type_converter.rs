@@ -47,7 +47,7 @@ pub fn gpx_to_geojson(gpx: &Gpx, name: &str) -> GeoJson {
         String::from("name"),
         JsonValue::from(name),
     );
-
+    
     let mut line_string: Vec<PointType> = vec![];
     for w in segment.points.iter() {
         line_string.push(vec![w.point().x(), w.point().y()]);

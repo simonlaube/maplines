@@ -1,4 +1,6 @@
-#[derive(Error, Debug)]
+#[derive(Debug)]
 pub enum ImportError {
-    GpxFileNotValid("The given GPX file is not valid."),
+    GpxFileNotValid,
+    FitFileNotAnActivity,
+    ImportError(String),
 }

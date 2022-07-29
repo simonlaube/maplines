@@ -1,15 +1,21 @@
 use geojson::{GeoJson, Feature, Value};
 use geo::{self, Extremes};
-use gpx::{Gpx, Track, read};
+use geo_types::Point;
+use gpx::{Gpx, TrackSegment, Track, read, Waypoint};
+use gpx::Time;
 use ulid::Ulid;
 use time::{OffsetDateTime, format_description::well_known::Rfc3339};
+use chrono::prelude::{DateTime, Utc};
+use fitparser::{profile, ErrorKind};
 
 use std::path::PathBuf;
 use std::fs::File;
 use std::io::{self, Write, BufReader, BufWriter};
 
-use crate::{track_analysis::TrackAnalysis, type_converter::gpx_to_geojson};
+use crate::type_converter::gpx_to_geojson;
+use crate::track_analysis::{TrackAnalysis, Activity, self};
 use crate::paths;
+use crate::errors::ImportError;
 
 pub fn gpx(gpx_path: &PathBuf) -> Result<TrackAnalysis, io::Error> {
     let file = File::open(gpx_path)?;
@@ -20,49 +26,165 @@ pub fn gpx(gpx_path: &PathBuf) -> Result<TrackAnalysis, io::Error> {
     optimize_gpx(&gpx);
 
     // TODO: take care of files with multiple tracks or segments
-    let start_time = gpx.tracks[0].segments[0].points[0].time.unwrap().format().unwrap();
+    let start_time = gpx.tracks[0].segments[0].points[0].time.unwrap();
     // TODO: Check if start_time already present in previous tracks
-    let ulid = Ulid::from_datetime(OffsetDateTime::parse(start_time.as_str(), &Rfc3339).unwrap());
+    let ulid = Ulid::from_datetime(start_time.into());
     let track: Track = gpx.tracks[0].clone();
+    let _type = activity_type_from_track(&track);
     
     // analyze geo data
     let geojson = gpx_to_geojson(&gpx, "placeholder");
     write_geojson(&geojson, ulid.clone().to_string().as_str())?;
     write_gpx(&gpx, &ulid.to_string())?;
-    let feature: Feature = Feature::try_from(geojson).unwrap();
-    let gj_geometry: geojson::Geometry = feature.geometry.unwrap();
-
-    // Change to Result instead of panic
-    let coords = if let Value::LineString(coords) = gj_geometry.value { coords }
-                                else { panic!("could not extract coords from geojson file"); };
-
-
-    let geo_line: geo::LineString<f64> = Value::LineString(coords).try_into().unwrap();
-    let geometry: geo::Geometry = geo_line.into();
-    let extremes = geometry.extremes().unwrap();
     
-    let track_analysis = TrackAnalysis {
-        version: crate::ANALYSIS_VERSION,
-        ulid: ulid.to_string(),
-        start_time: Some(start_time),
-        name: track.name,
-        comment: track.comment,
-        description: track.description,
-        source: track.source,
-        _type: track._type,
-        number: track.number,
-        creator: gpx.creator,
-        x_min: extremes.x_min.coord.into(),
-        x_max: extremes.x_max.coord.into(),
-        y_min: extremes.y_min.coord.into(),
-        y_max: extremes.y_max.coord.into(),
-    };
+    let track_analysis = TrackAnalysis::from_import(&ulid, &start_time, &track, gpx.creator, geojson, None);
     write_track_analysis(&track_analysis)?;
     Ok(track_analysis)
 }
 
-pub fn fit() {
-    todo!("import .FIT files");
+pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
+    let mut fp = match File::open(fit_path) {
+        Err(err) => return Err(ImportError::ImportError(err.to_string())),
+        Ok(f) => f,
+    };
+
+    let mut activity: Activity = Activity::Generic;
+    let mut track_segment = TrackSegment::new();
+    let parsed_fit = match fitparser::from_reader(&mut fp) {
+        Err(err) => return Err(ImportError::ImportError(err.to_string())),
+        Ok(pf) => pf,
+    };
+    
+    for data in parsed_fit {
+        if data.kind() == profile::MesgNum::Record {
+            let mut lat: Option<f64> = None;
+            let mut long: Option<f64> = None;
+            // let ele: i32;
+            let mut timestamp: Option<DateTime<Utc>> = None;
+            for f in data.fields() {
+                match f.name() {
+                    "position_lat" => {
+                        lat = Some(f.value().to_string().parse::<f64>().unwrap() * 0.000000083819032);
+                    }
+                    "position_long" => {
+                        long = Some(f.value().to_string().parse::<f64>().unwrap() * 0.000000083819032);
+                    }
+                    "timestamp" => {
+                        timestamp = Some(f.value().to_string().parse::<DateTime<Utc>>().unwrap());
+                    }
+                    _ => (),
+                }
+            }
+            match (lat, long, timestamp) {
+                (Some(la), Some(lo), Some(ti)) => {
+                    let mut point = Waypoint::new(Point::new(lo, la));
+                    point.time = Some(Time::from(OffsetDateTime::from_unix_timestamp(ti.timestamp()).unwrap()));
+                    track_segment.points.push(point);
+                }
+                _ => (),
+            }
+        }
+        
+        else if data.kind() == profile::MesgNum::FileId {
+            for f in data.fields() {
+                match f.name() {
+                    "type" => {
+                        if f.value().to_string() != "activity" {
+                            return Err(ImportError::FitFileNotAnActivity);
+                        }
+                    }
+                    _ => break,
+                }
+            }
+        }
+        
+        else if data.kind() == profile::MesgNum::Sport {
+            // TODO: extend for more activities
+            for f in data.fields() {
+                match f.name() {
+                    "cross_country_skiing" => activity = Activity::CrossCountrySkiing, // has to be tested with xc capable device
+                    "cycling" => activity = Activity::Cycling,
+                    "running" => activity = Activity::Running,
+                    "hiking" => activity = Activity::Hiking,
+                    "walking" => activity = Activity::Hiking, // same activity as hiking
+                    "swimming" => activity = Activity::Swimming, // has to be tested with swimming capable device
+                    "inline_skating" => activity = Activity::InlineSkating, // has to be tested with is capable device
+                    "generic" => activity = Activity::Generic, // has to be tested
+                    _ => activity = Activity::Generic,
+                }
+            }
+        }
+    }
+    let mut track = Track::new();
+    track.segments.push(track_segment);
+    let mut gpx = Gpx::default();
+    gpx.tracks.push(track);
+    gpx.version = gpx::GpxVersion::Gpx11;
+
+    let start_time = gpx.tracks[0].segments[0].points[0].time.unwrap();
+    let ulid = Ulid::from_datetime(start_time.into());
+    let geojson = gpx_to_geojson(&gpx, "placeholder");
+    write_geojson(&geojson, ulid.clone().to_string().as_str());
+    write_gpx(&gpx, &ulid.to_string());
+    
+    let _type = activity_type_from_track(&gpx.tracks[0]);
+
+    let track_analysis = TrackAnalysis::from_import(&ulid, &start_time, &gpx.tracks[0], gpx.creator, geojson, Some(activity));
+    Ok(track_analysis)
+}
+
+fn activity_type_from_track(track: &Track) -> Activity {
+    match &track._type {
+        Some(t) => {
+            match t.as_str() {
+                // Strava Activity Numbering (experimental, may possibly be inaccurate)
+                "1" => Activity::Cycling,
+                "4" => Activity::Hiking,
+                "6" => Activity::InlineSkating,
+                "7" => Activity::CrossCountrySkiing,
+                "9" => Activity::Running,
+                "10" => Activity::Hiking, // walk
+                "16" => Activity::Swimming,
+                _ => Activity::Generic,
+                /*
+                    1: Ride
+                    2: Alpine Ski
+                    3: Backcountry Ski
+                    4: Hike
+                    5: Ice Skate
+                    6: Inline Skate
+                    7: Nordic Ski
+                    8: Roller Ski
+                    9: Run
+                    10: Walk
+                    11: Workout
+                    12: Snowboard
+                    13: Snowshoe
+                    14: Kitesurf
+                    15: Windsurf
+                    16: Swim
+                    17: Virtual Ride
+                    18: E-Bike Ride
+                    19: Velomobile
+                    21: Canoe
+                    22: Kayaking
+                    23: Rowing
+                    24: Stand Up Paddling
+                    25: Surfing
+                    26: Crossfit
+                    27: Elliptical
+                    28: Rock Climb
+                    29: Stair-Stepper
+                    30: Weight Training
+                    31: Yoga
+                    51: Handcycle
+                    52: Wheelchair
+                    53: Virtual Run
+                 */
+            }
+        }
+        None => Activity::Generic
+    }
 }
 
 fn optimize_gpx(gpx: &Gpx) {
@@ -81,7 +203,6 @@ fn write_gpx(gpx: &Gpx, ulid: &str) -> Result<(), io::Error> {
     let mut path = paths::gpx();
     path.push(ulid);
     path.set_extension("gpx");
-    println!("{:?}", &path);
     let file = File::create(path)?;
     let writer = BufWriter::new(file);
     gpx::write(gpx, writer).unwrap();

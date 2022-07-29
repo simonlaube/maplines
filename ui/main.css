@@ -132,6 +132,7 @@ th {
 th, td {
     border-bottom: 1px solid #ddd;
     padding: 0.2rem;
+    white-space: nowrap;
 }
 /*table td + td { border-left: 1px solid #ddd; }
 table th + th { border-left: 1px solid #ddd; }*/
@@ -147,3 +148,4 @@ tbody tr:hover td {
     font-weight: bold;
     letter-spacing: -1px;
 }
+/*tbody tr:*/
