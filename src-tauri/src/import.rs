@@ -120,6 +120,7 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
     write_gpx(&gpx, &ulid.to_string());
 
     let track_analysis = TrackAnalysis::from_import(&ulid, &start_time, &gpx.tracks[0], gpx.creator, geojson, Some(activity));
+    write_track_analysis(&track_analysis);
     Ok(track_analysis)
 }
 
