@@ -61,15 +61,9 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
             let mut timestamp: Option<DateTime<Utc>> = None;
             for f in data.fields() {
                 match f.name() {
-                    "position_lat" => {
-                        lat = Some(f.value().to_string().parse::<f64>().unwrap() * 0.000000083819032);
-                    }
-                    "position_long" => {
-                        long = Some(f.value().to_string().parse::<f64>().unwrap() * 0.000000083819032);
-                    }
-                    "timestamp" => {
-                        timestamp = Some(f.value().to_string().parse::<DateTime<Utc>>().unwrap());
-                    }
+                    "position_lat" => lat = Some(f.value().to_string().parse::<f64>().unwrap() * 0.000000083819032),
+                    "position_long" => long = Some(f.value().to_string().parse::<f64>().unwrap() * 0.000000083819032),
+                    "timestamp" => timestamp = Some(f.value().to_string().parse::<DateTime<Utc>>().unwrap()),
                     _ => (),
                 }
             }
