@@ -28,6 +28,7 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] add route creation
 - [ ] display heat map
 - [ ] distinction of recorded tracks and planned tracks
+- [ ] map select desired layers to display
 
 
 ## Future Design Improvements
