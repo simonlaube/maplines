@@ -4,12 +4,13 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 ## Future Features
 - [x] add gpx to geojson conversion
 - [x] draw line on map
-- [ ] add user settings (e.g. default smart watches import path, ...)
+- [x] add user settings (e.g. default smart watches import path, ...)
 - [x] import fit files
-- [ ] load activities from garmin / strava...
+- [x] load activities from garmin
+- [ ] load activities from strava
+- [ ] load activities from komoot
 - [ ] on import check if track already present
 - [ ] reduce number of gps points per line
-- [ ] try to approximate gps lines to streets of OSM
 - [ ] add detailed analysis of tracks (profile & speed calculation, mountain category detection, rounds)
 - [x] add activity types
 - [x] refactor importing gps files (import by copying and analyzing original files from within program)
@@ -30,6 +31,7 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] display heat map
 - [ ] distinction of recorded tracks and planned tracks
 - [ ] map select desired layers to display
+- [ ] try to approximate gps lines to streets of OSM
 
 
 ## Future Design Improvements
