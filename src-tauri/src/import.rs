@@ -47,6 +47,7 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
     };
     // import creator and add to gpx
     let mut activity: Activity = Activity::Generic;
+    let mut creator: String = "unknown".to_string();
     let mut track_segment = TrackSegment::new();
     let parsed_fit = match fitparser::from_reader(&mut fp) {
         Err(err) => return Err(ImportError::ImportError(err.to_string())),
@@ -78,6 +79,7 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
         }
         
         else if data.kind() == profile::MesgNum::FileId {
+            println!("{:?}", data);
             for f in data.fields() {
                 match f.name() {
                     "type" => {
@@ -85,6 +87,7 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
                             return Err(ImportError::FitFileNotAnActivity);
                         }
                     }
+                    "manufacturer" => creator = f.value().to_string(),
                     _ => break,
                 }
             }
@@ -93,7 +96,6 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
         else if data.kind() == profile::MesgNum::Sport {
             // TODO: extend for more activities
             for f in data.fields() {
-                println!("{:?}", data);
                 match f.name() {
                     "sport" => {
                         match f.value().to_string().as_str() {
@@ -118,12 +120,13 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
     let mut gpx = Gpx::default();
     gpx.tracks.push(track);
     gpx.version = gpx::GpxVersion::Gpx11;
+    gpx.creator = Some(creator);
 
     let start_time = gpx.tracks[0].segments[0].points[0].time.unwrap();
     let ulid = Ulid::from_datetime(start_time.into());
     let geojson = gpx_to_geojson(&gpx, "placeholder");
-    write_geojson(&geojson, ulid.clone().to_string().as_str());
-    write_gpx(&gpx, &ulid.to_string());
+    write_geojson(&geojson, ulid.clone().to_string().as_str()).unwrap();
+    write_gpx(&gpx, &ulid.to_string()).unwrap();
 
     let track_analysis = TrackAnalysis::from_import(&ulid, &start_time, &gpx.tracks[0], gpx.creator, geojson, Some(activity));
     write_track_analysis(&track_analysis).unwrap();
