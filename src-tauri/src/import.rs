@@ -93,16 +93,22 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
         else if data.kind() == profile::MesgNum::Sport {
             // TODO: extend for more activities
             for f in data.fields() {
+                println!("{:?}", data);
                 match f.name() {
-                    "cross_country_skiing" => activity = Activity::CrossCountrySkiing, // has to be tested with xc capable device
-                    "cycling" => activity = Activity::Cycling,
-                    "running" => activity = Activity::Running,
-                    "hiking" => activity = Activity::Hiking,
-                    "walking" => activity = Activity::Hiking, // same activity as hiking
-                    "swimming" => activity = Activity::Swimming, // has to be tested with swimming capable device
-                    "inline_skating" => activity = Activity::InlineSkating, // has to be tested with is capable device
-                    "generic" => activity = Activity::Generic, // has to be tested
-                    _ => activity = Activity::Generic,
+                    "sport" => {
+                        match f.value().to_string().as_str() {
+                            "cross_country_skiing" => activity = Activity::CrossCountrySkiing, // has to be tested with xc capable device
+                            "cycling" => activity = Activity::Cycling,
+                            "running" => activity = Activity::Running,
+                            "hiking" => activity = Activity::Hiking,
+                            "walking" => activity = Activity::Hiking, // same activity as hiking
+                            "swimming" => activity = Activity::Swimming, // has to be tested with swimming capable device
+                            "inline_skating" => activity = Activity::InlineSkating, // has to be tested with is capable device
+                            "generic" => activity = Activity::Generic, // has to be tested
+                            _ => activity = Activity::Generic,
+                        }
+                    }
+                    _ => (),
                 }
             }
         }
