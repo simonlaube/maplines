@@ -7,6 +7,7 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] add user settings (e.g. default smart watches import path, ...)
 - [x] import fit files
 - [ ] load activities from garmin / strava...
+- [ ] on import check if track already present
 - [ ] reduce number of gps points per line
 - [ ] try to approximate gps lines to streets of OSM
 - [ ] add detailed analysis of tracks (profile & speed calculation, mountain category detection, rounds)

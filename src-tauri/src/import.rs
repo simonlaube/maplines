@@ -45,7 +45,7 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
         Err(err) => return Err(ImportError::ImportError(err.to_string())),
         Ok(f) => f,
     };
-
+    // import creator and add to gpx
     let mut activity: Activity = Activity::Generic;
     let mut track_segment = TrackSegment::new();
     let parsed_fit = match fitparser::from_reader(&mut fp) {
@@ -120,7 +120,7 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
     write_gpx(&gpx, &ulid.to_string());
 
     let track_analysis = TrackAnalysis::from_import(&ulid, &start_time, &gpx.tracks[0], gpx.creator, geojson, Some(activity));
-    write_track_analysis(&track_analysis);
+    write_track_analysis(&track_analysis).unwrap();
     Ok(track_analysis)
 }
 
@@ -132,7 +132,7 @@ fn write_track_analysis(ta: &TrackAnalysis) -> Result<(), io::Error> {
     let mut path = paths::track_analysis();
     path.push(ta.ulid.clone().to_string());
     path.set_extension("json");
-    write_file(path, serde_json::to_string(ta)?);
+    write_file(path, serde_json::to_string(ta)?)?;
     Ok(())
 }
 
@@ -150,7 +150,7 @@ fn write_geojson(geojson: &GeoJson, ulid: &str) -> Result<(), io::Error> {
     let mut path = paths::geojson();
     path.push(ulid);
     path.set_extension("geojson");
-    write_file(path, geojson.to_string());
+    write_file(path, geojson.to_string())?;
     Ok(())
 }
 

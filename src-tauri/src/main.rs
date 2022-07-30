@@ -15,25 +15,31 @@ mod track_analysis;
 mod type_converter;
 mod paths;
 mod errors;
+mod settings;
 
+use std::ffi::OsStr;
 use std::fs;
 use std::path::PathBuf;
 use geojson::GeoJson;
 use track_analysis::TrackAnalysis;
-use tauri::api::dialog;
+use settings::Settings;
+use tauri::api::{dialog, dir};
 use tauri::{CustomMenuItem, Menu, Submenu};
 
 const ANALYSIS_VERSION: i32 = 1;
+const SETTINGS_VERSION: i32 = 1;
 
 fn main() {
   paths::create_dirs_if_not_exist();
+  //let mut settings: Mutex<Settings> = Mutex::new(Settings::load().unwrap());
   let version_item = CustomMenuItem::new("version".to_string(), "Version");
   let main_menu = Submenu::new("Main", Menu::new()
   .add_item(version_item));
   let import_gpx = CustomMenuItem::new("gpx".to_string(), "Import GPX Files...");
   let import_fit = CustomMenuItem::new("fit".to_string(), "Import FIT Files...");
-  let import_direct = CustomMenuItem::new("direct".to_string(), "Import from GPS Device");
-  let mut open_menu = Submenu::new("Open", Menu::new().add_item(import_gpx).add_item(import_fit).add_item(import_direct));
+  let import_path = CustomMenuItem::new("path".to_string(), "Add Import Path...");
+  let import_direct = CustomMenuItem::new("direct".to_string(), "Import From Paths");
+  let mut open_menu = Submenu::new("Open", Menu::new().add_item(import_gpx).add_item(import_fit).add_item(import_path).add_item(import_direct));
 
   tauri::Builder::default()
     .menu(Menu::new().add_submenu(main_menu).add_submenu(open_menu))
@@ -43,41 +49,63 @@ fn main() {
       }
       "gpx" => {
         dialog::FileDialogBuilder::default()
-          .add_filter("GPS", &["gpx"])
-          .pick_files(move |file_paths| {
-            match file_paths {
-              Some(vec_fp) => {
-                for fp in vec_fp {
-                  let track_analysis = import::gpx(&fp).unwrap();
-                  event.window().emit("track_import", track_analysis).unwrap();
-                }
+        .add_filter("GPS", &["gpx"])
+        .pick_files(move |file_paths| {
+          match file_paths {
+            Some(vec_fp) => {
+              for fp in vec_fp {
+                let track_analysis = import::gpx(&fp).unwrap();
+                event.window().emit("track_import", track_analysis).unwrap();
               }
-              _ => { dbg!("gpx file could not be imported."); },
             }
-          })
+            _ => { dbg!("gpx file could not be imported."); },
+          }
+        })
       }
       "fit" => {
         dialog::FileDialogBuilder::default()
-          .add_filter("FIT", &["FIT", "fit"])
-          .pick_files(move |file_paths| {
-            match file_paths {
-              Some(vec_fp) => {
-                for fp in vec_fp {
-                  let track_analysis = import::fit(&fp).unwrap();
-                  event.window().emit("track_import", track_analysis).unwrap();
-                }
+        .add_filter("FIT", &["FIT", "fit"])
+        .pick_files(move |file_paths| {
+          match file_paths {
+            Some(vec_fp) => {
+              for fp in vec_fp {
+                let track_analysis = import::fit(&fp).unwrap();
+                event.window().emit("track_import", track_analysis).unwrap();
               }
-              _ => { dbg!("gpx file could not be imported."); },
             }
-          })
+            _ => { dbg!("gpx file could not be imported."); },
+          }
+        })
+      }
+      "path" => {
+        dialog::FileDialogBuilder::default().pick_folder(|dir_path| {
+          let mut settings = Settings::load().unwrap();
+          settings.add_path(dir_path.unwrap());
+        });
+
       }
       "direct" => {
-        dialog::FileDialogBuilder::default()
-          .add_filter("GPS", &["fit", "FIT"])
-          .pick_file(|path_buf| match path_buf {
-            Some(p) => {}
-            _ => {}
-          })
+        let settings = Settings::load().unwrap();
+        std::thread::spawn(move || {
+          for p in settings.import_paths {
+            // import files
+            let paths: Vec<PathBuf> = std::fs::read_dir(p).unwrap()
+            .into_iter()
+            .map(|x| x.unwrap().path())
+            //.filter(|x| x.file_name().unwrap().to_str().unwrap().ends_with(".json"))
+            .collect();
+            for p in paths {
+              if p.extension() == Some(OsStr::new("fit")) || p.extension() == Some(OsStr::new("FIT")) {
+                let track_analysis = import::fit(&p).unwrap();
+                event.window().emit("track_import", track_analysis).unwrap();
+              } else if p.extension() == Some(OsStr::new("gpx")) {
+                let track_analysis = import::gpx(&p).unwrap();
+                event.window().emit("track_import", track_analysis).unwrap();
+              }
+            }
+  
+          }
+        });
       }
       _ => {}
     })
@@ -91,10 +119,10 @@ fn main() {
 #[tauri::command]
 fn load_track_analysis() -> Vec<TrackAnalysis> {
   let paths: Vec<PathBuf> = std::fs::read_dir(paths::track_analysis()).unwrap()
-    .into_iter()
-    .map(|x| x.unwrap().path())
-    .filter(|x| x.file_name().unwrap().to_str().unwrap().ends_with(".json"))
-    .collect();
+  .into_iter()
+  .map(|x| x.unwrap().path())
+  .filter(|x| x.file_name().unwrap().to_str().unwrap().ends_with(".json"))
+  .collect();
   let mut result: Vec<TrackAnalysis> = vec![];
   for p in paths {
     match TrackAnalysis::read(&p) {
