@@ -22,6 +22,8 @@ pub struct TrackAnalysis {
     pub x_max: (f64, f64),
     pub y_min: (f64, f64),
     pub y_max: (f64, f64),
+    pub start_coords: (f64, f64),
+    pub end_coords: (f64, f64),
 }
 
 impl TrackAnalysis {
@@ -39,6 +41,10 @@ impl TrackAnalysis {
         // Change to Result instead of panic
         let coords = if let Value::LineString(coords) = gj_geometry.value { coords }
                                     else { panic!("could not extract coords from geojson file"); };
+        let start = coords.first().unwrap();
+        let start_coords: (f64, f64) = (start.first().unwrap().to_owned(), start.last().unwrap().to_owned());
+        let end = coords.last().unwrap();
+        let end_coords: (f64, f64) = (end.first().unwrap().to_owned(), end.last().unwrap().to_owned());
         let geo_line: geo::LineString<f64> = Value::LineString(coords).try_into().unwrap();
         let geometry: geo::Geometry = geo_line.into();
         let extremes = geometry.extremes().unwrap();
@@ -62,6 +68,8 @@ impl TrackAnalysis {
             x_max: extremes.x_max.coord.into(),
             y_min: extremes.y_min.coord.into(),
             y_max: extremes.y_max.coord.into(),
+            start_coords,
+            end_coords,
         }
     }
 }

@@ -148,4 +148,9 @@ tbody tr:hover td {
     font-weight: bold;
     letter-spacing: -1px;
 }
+
+.track-icon {
+    background-size: cover;
+    cursor: pointer;
+}
 /*tbody tr:*/

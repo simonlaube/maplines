@@ -2,6 +2,7 @@
 const invoke = window.__TAURI__.invoke;
 const { emit, listen } = window.__TAURI__.event;
 
+
 var map;
 var table_body;
 var row_objects;
@@ -40,6 +41,7 @@ function reload_table() {
         });
 }
 
+
 function add_to_table(entry, sort) {
     let row = table_body.insertRow();
     row_objects[entry.ulid] = entry;
@@ -73,6 +75,8 @@ function add_to_table(entry, sort) {
                 padding: { top: 25, bottom: 25, left: 25, right: 25 }
             });
         });
+        add_track_icons(entry);
+        
     });
     if (sort) {
         sortRowsDate(document.getElementById("gpx-table"), 0, row_objects);
@@ -84,48 +88,6 @@ function clear_table_selection() {
         console.log(r);
         r.style.color = "";
     }
-}
-
-function init_map() {
-    reload_table();
-    map = new maplibregl.Map({
-        container: 'map', // container id
-        // style: 'https://demotiles.maplibre.org/style.json', // style URL
-        style: 'maplibre-gl@2.1.9/style/normal.json',
-        // style: 'https://api.maptiler.com/maps/hybrid/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL',
-        center: [0, 0], // starting position [lng, lat]
-        zoom: 1 // starting zoom
-    });
-    map.addControl(new maplibregl.FullscreenControl());
-    map.dragRotate.disable();
-    map.touchZoomRotate.disableRotation();
-    map.addControl(new maplibregl.NavigationControl());
-    map.on('load', function () {
-        map.addSource('gps-line', {
-            'type': 'geojson',
-            'data': {
-                'type': 'Feature',
-                'properties': {},
-                'geometry': {
-                    'type': 'LineString',
-                    'coordinates': []
-                }
-            }
-        });
-        map.addLayer({
-            'id': 'gps-line',
-            'type': 'line',
-            'source': 'gps-line',
-            'layout': {
-                'line-join': 'round',
-                'line-cap': 'round'
-            },
-            'paint': {
-                'line-color': '#9f2dcf',
-                'line-width': 3
-            }
-        });
-    });
 }
 
 function sortRowsDate(table, columnIndex, row_objects) {
