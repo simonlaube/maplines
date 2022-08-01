@@ -92,3 +92,29 @@ function add_track_icons(entry) {
         .addTo(map);
     });
 }
+
+function add_pause_icons(pauses) {
+    document.querySelectorAll(".pause-icon").forEach(icon => {
+        icon.remove();
+    })
+    pauses.forEach(p => {
+        console.log(p);
+        var el = document.createElement('div');
+        el.className = 'track-icon';
+        el.style.backgroundImage = "url('icons/pause-button2.png')"
+        el.style.width = 15 + 'px';
+        el.style.height = 15 + 'px';
+            
+        var date = new Date(0);
+        date.setSeconds(p.duration_sec); // specify value for SECONDS here
+        var timeString = date.toISOString().substr(11, 8);
+        el.addEventListener('click', function () {
+        window.alert(timeString);
+        });
+            
+        // add marker to map
+        new maplibregl.Marker(el)
+        .setLngLat([p.point_before[0], p.point_before[1]])
+        .addTo(map);
+    });
+}

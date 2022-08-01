@@ -4,7 +4,9 @@ use serde::{Serialize, Deserialize};
 use ulid;
 use gpx::{Time, Track};
 use std::path::PathBuf;
-use std::fs;
+use std::fs::{self, File};
+
+use crate::paths;
 /// same as Track but without links and segments
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TrackAnalysis {

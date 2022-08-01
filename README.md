@@ -19,6 +19,7 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] add start, stop and pause labels on map
 - [ ] add deleting & archiving of tracks
 - [ ] add editing of tracks and their metadata
+- [ ] add error dialog box
 
 ## More Distant Future Features
 - [ ] add tags

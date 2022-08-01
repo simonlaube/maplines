@@ -67,7 +67,6 @@ function add_to_table(entry, sort) {
         row.style.background = '#f55';*/
         invoke('load_geojson', { ulid: entry.ulid })
         .then((response) => {
-            console.log(response);
             var line = map.getSource('gps-line');
             line.setData(response);
             var bbox = [[entry.x_min[0], entry.y_min[1]], [entry.x_max[0], entry.y_max[1]]];
@@ -76,6 +75,10 @@ function add_to_table(entry, sort) {
             });
         });
         add_track_icons(entry);
+        invoke('load_pauses', { ulid: entry.ulid })
+        .then((response) => {
+            add_pause_icons(response);
+        })
         
     });
     if (sort) {
