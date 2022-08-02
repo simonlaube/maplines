@@ -1,34 +1,28 @@
-use std::str::FromStr;
 
-use geo::{geometry::Coordinate, Point, EuclideanDistance, HaversineDistance};
+use geo::{Point, HaversineDistance};
 use geojson::GeoJson;
 use gpx::{Gpx, Time, Waypoint};
-use chrono;
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
 use crate::{track_analysis::TrackAnalysis, io};
 
-/// Defines the number of points that have to consecutively lie in a cluster
-const NR_CLUSTER_DETECTION_PTS: i64 = 6;
-/// Min distance per second to not be considered a cluster
-const MIN_ABS_DIST_SEC: f64 = 0.5;
-/// relative dist / abs dist
-const MIN_RATIO: f64 = 0.4;
-/// Clusters within this range get declared as clusters
+/// Scattered points within this radius can be declared as clusters -> Pauses
 const SCATTER_RADIUS: f64 = 30.0;
+/// Consecutive points must lie within a SCATTER_RADIUS for at least MIN_CLUSTER_TIME to be considered a cluster
+/// The lower this parameter, the more clusters will be found. (Combined with a low moving speed,
+/// non-existent clusters will be marked as clusters.)
+/// The higher, the more clusters will be missed.
+const MIN_CLUSTER_TIME: i64 = 60;
 /// Intervals greater than MAX_INTERVAL are considered pauses or teleports
 const MAX_INTERVAL: i64 = 8;
 
-/// Consecutive points must lie within a SCATTER_RADIUS for at least MIN_CLUSTER_TIME to be considered a cluster
-const MIN_CLUSTER_TIME: i64 = 40;
-
-
+// Good Scatter <-> time ratio
+// 30 - 60
 
 /// Returns an Option containing the points before and after the break
 /// and the time passed in seconds.
 pub fn find(track_analysis: TrackAnalysis) -> Option<Vec<Pause>> {
-    let min_break_time: u64 = 40;
     let geojson = io::read_geojson(&track_analysis.ulid);
     let gpx = io::read_gpx(&track_analysis.ulid);
     match (geojson, gpx) {
@@ -40,8 +34,6 @@ pub fn find(track_analysis: TrackAnalysis) -> Option<Vec<Pause>> {
         }
         _ => return None
     }
-
-    None
 }
 
 // TODO: Error handling
@@ -101,11 +93,17 @@ fn find_clusters(gpx: &Gpx, geojson: &GeoJson) -> Vec<Pause> {
                 // check if last cluster was pause or not and continue
                 } else {
                     if time_in_radius > MIN_CLUSTER_TIME {
-                        let c = improve_cluster(&cluster, &center);
+                        let cl = trim_cluster(&cluster, &center);
+                        match cl {
+                            Some(c) => {
+                                result.push(Pause { point_before: c.first().unwrap().point().into(), point_after: c.last().unwrap().point().into(), duration_sec: time_in_radius as u64 });
+                                result.push(Pause { point_before: c.last().unwrap().point().into(), point_after: c.last().unwrap().point().into(), duration_sec: time_in_radius as u64 });
+                                result.push(Pause { point_before: center.into(), point_after: center.into(), duration_sec: time_in_radius as u64 });
+                            }
+                            None => (),
+                        }
                         // let c = &cluster;
-                        result.push(Pause { point_before: c.first().unwrap().point().into(), point_after: c.last().unwrap().point().into(), duration_sec: time_in_radius as u64 });
-                        result.push(Pause { point_before: c.last().unwrap().point().into(), point_after: c.last().unwrap().point().into(), duration_sec: time_in_radius as u64 });
-                        result.push(Pause { point_before: center.into(), point_after: center.into(), duration_sec: time_in_radius as u64 });
+                        
                     }
                     pos += current_cluster.len();
                     time_in_radius = 0;
@@ -131,7 +129,6 @@ fn point_closest_to_center(cluster: &Vec<&Waypoint>) -> (usize, Point<f64>) {
             shortest_dist = center.haversine_distance(&p.point());
             index = i;
         }
-
     }
     if index == 0 {
         index = 1;
@@ -139,10 +136,11 @@ fn point_closest_to_center(cluster: &Vec<&Waypoint>) -> (usize, Point<f64>) {
     (index, center)
 }
 
-fn improve_cluster<'a>(cluster: &Vec<&'a Waypoint>, center: &'a Point<f64>) -> Vec<&'a Waypoint> {
+/// Trims the in- and outgoing gps points of the cluster 
+/// if they lie in a line towards the center
+fn trim_cluster<'a>(cluster: &Vec<&'a Waypoint>, center: &'a Point<f64>) -> Option<Vec<&'a Waypoint>> {
     let mut start_center_dist: f64 = cluster[0].point().haversine_distance(center).abs();
     let mut start_index = 0;
-    let init_cluster_len = cluster.len();
     let mut c = cluster.clone();
     let mut last_time = OffsetDateTime::from(cluster[0].time.unwrap()).unix_timestamp();
     for (i, p) in cluster[1..].iter().enumerate() {
@@ -170,11 +168,12 @@ fn improve_cluster<'a>(cluster: &Vec<&'a Waypoint>, center: &'a Point<f64>) -> V
             break;
         }
     }
-    
     c = c.split_at(end_index).1.into();
     c.reverse();
-    c
-
+    if OffsetDateTime::from(c.last().unwrap().time.unwrap()).unix_timestamp() - OffsetDateTime::from(c[0].time.unwrap()).unix_timestamp() < MAX_INTERVAL {
+        return None
+    }
+    Some(c)
 }
 
 #[derive(Serialize, Deserialize, Debug)]
