@@ -9,7 +9,7 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 - [x] load activities from garmin
 - [ ] load activities from strava
 - [ ] load activities from komoot
-- [ ] on import check if track already present
+- [x] on import check if track already present
 - [ ] reduce number of gps points per line
 - [ ] add detailed analysis of tracks (profile & speed calculation, mountain category detection, rounds)
 - [x] add activity types

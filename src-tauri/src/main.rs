@@ -18,10 +18,12 @@ mod paths;
 mod pause_finder;
 mod errors;
 mod settings;
+mod util;
 
 use std::ffi::OsStr;
 use std::fs;
 use std::path::PathBuf;
+use errors::ImportError;
 use geojson::GeoJson;
 use pause_finder::Pause;
 use track_analysis::TrackAnalysis;
@@ -57,7 +59,10 @@ fn main() {
           match file_paths {
             Some(vec_fp) => {
               for fp in vec_fp {
-                let track_analysis = import::gpx(&fp).unwrap();
+                let track_analysis = match import::gpx(&fp) {
+                  Err(e) => { println!("File with same start time is already present."); return; },
+                  Ok(t) => t,
+                };
                 event.window().emit("track_import", track_analysis).unwrap();
               }
             }
@@ -154,5 +159,4 @@ fn load_geojson(ulid: String) -> Option<GeoJson> {
 #[tauri::command]
 fn load_pauses(ulid: String) -> Option<Vec<Pause>> {
   pause_finder::find(io::read_track_analysis(&ulid).unwrap())
-
 }

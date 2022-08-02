@@ -94,10 +94,12 @@ fn find_clusters(gpx: &Gpx, geojson: &GeoJson) -> Vec<Pause> {
                 } else {
                     if time_in_radius > MIN_CLUSTER_TIME {
                         let cl = trim_cluster(&cluster, &center);
+                        
                         match cl {
                             Some(c) => {
-                                result.push(Pause { point_before: c.first().unwrap().point().into(), point_after: c.last().unwrap().point().into(), duration_sec: time_in_radius as u64 });
-                                result.push(Pause { point_before: c.last().unwrap().point().into(), point_after: c.last().unwrap().point().into(), duration_sec: time_in_radius as u64 });
+                                let time = OffsetDateTime::from(c.last().unwrap().time.unwrap()).unix_timestamp() - OffsetDateTime::from(c.first().unwrap().time.unwrap()).unix_timestamp();
+                                result.push(Pause { point_before: c.first().unwrap().point().into(), point_after: c.last().unwrap().point().into(), duration_sec: time as u64 });
+                                result.push(Pause { point_before: c.last().unwrap().point().into(), point_after: c.last().unwrap().point().into(), duration_sec: time as u64 });
                                 result.push(Pause { point_before: center.into(), point_after: center.into(), duration_sec: time_in_radius as u64 });
                             }
                             None => (),
