@@ -101,9 +101,14 @@ function add_pause_icons(pauses) {
         console.log(p);
         var el = document.createElement('div');
         el.className = 'track-icon';
+
+        var size = 15;
+        if (p.duration_sec < 600) { // Pause was shorter than 10 minutes
+            size = 10;
+        }
         el.style.backgroundImage = "url('icons/pause-button2.png')"
-        el.style.width = 15 + 'px';
-        el.style.height = 15 + 'px';
+        el.style.width = size + 'px';
+        el.style.height = size + 'px';
             
         var date = new Date(0);
         date.setSeconds(p.duration_sec); // specify value for SECONDS here
