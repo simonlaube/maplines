@@ -11,6 +11,7 @@ var selected_rows;
 window.onload = init;
 
 function init() {
+    reload_table();
     init_map();
     selected_rows = [];
 }
@@ -21,7 +22,7 @@ listen("track_import", ev => {
 
 function list_gpx_files() {
     invoke('list_gpx_files')
-        .then((response) => console.log(response))
+        .then((response) => console.log(response));
 }
 
 function reload_table() {
@@ -59,14 +60,15 @@ function add_to_table(entry, sort) {
     creator.innerHTML = entry.creator;
 
     row.addEventListener("click", (event) => {
-        /*if (!event.shiftKey) {
+        
+        if (!event.shiftKey) {
             clear_table_selection();
-            selected_rows = [];
         }
-        selected_rows.push(row);
-        row.style.background = '#f55';*/
+        toggle_row_selection(entry.ulid);
+        document.getSelection().removeAllRanges();
+
         invoke('load_geojson', { ulid: entry.ulid })
-        .then((response) => {
+        .then(async (response) => {
             var line = map.getSource('gps-line');
             line.setData(response);
             var bbox = [[entry.x_min[0], entry.y_min[1]], [entry.x_max[0], entry.y_max[1]]];
@@ -87,9 +89,41 @@ function add_to_table(entry, sort) {
 }
 
 function clear_table_selection() {
-    for (r in selected_rows) {
-        console.log(r);
-        r.style.color = "";
+    for (var ulid of selected_rows) {
+        var rows = table_body.rows;
+        console.log(ulid);
+        for (var row of rows) {
+            console.log(row.querySelectorAll("td")[0].innerHTML);
+            if (row.querySelectorAll("td")[0].innerHTML == ulid) {
+                console.log("remove class");
+                row.classList.remove("selected-row");
+                break;
+            }
+        }
+    }
+    selected_rows = [];
+}
+
+function toggle_row_selection(ulid) {
+    if (selected_rows.includes(ulid)) {
+        console.log("includes");
+        var rows = table_body.querySelectorAll("tr");
+        rows.forEach(row => {
+            if (row.querySelectorAll("td")[0].innerHTML == ulid) {
+                row.classList.remove("selected-row");
+            }
+        });
+        
+        delete selected_rows.ulid;
+    } else {
+        var rows = table_body.querySelectorAll("tr");
+        rows.forEach(row => {
+            if (row.querySelectorAll("td")[0].innerHTML == ulid) {
+                row.classList.add("selected-row");
+            }
+        });
+        selected_rows.push(ulid);
+        console.log(selected_rows);
     }
 }
 
@@ -110,6 +144,5 @@ function sortRowsDate(table, columnIndex, row_objects) {
 function comparatorDate(a, b) {
     let a_date = new Date(a.value.start_time);
     let b_date = new Date(b.value.start_time);
-    console.log(a.start_time);
     return (a_date < b_date) - (a_date > b_date);
 }

@@ -138,15 +138,26 @@ th, td {
 table th + th { border-left: 1px solid #ddd; }*/
 tr:nth-child(odd) { background-color: #fff; }
 tr:nth-child(even) { background-color: #f2f2f2; }
+.selected-row:nth-child(odd) { background-color: #f55; }
+.selected-row:nth-child(even) { background-color: #f33; }
+
 tbody tr:hover * {
     background-color: #e2e2e2;
     cursor: pointer;
+}
+
+tbody .selected-row:hover * {
+    background-color: #d22;
 }
 
 tbody tr:hover td {
     font-family: 'PT-Root-UI';
     font-weight: bold;
     letter-spacing: -1px;
+}
+
+* {
+    user-select: none;
 }
 
 .track-icon {

@@ -1,6 +1,5 @@
 
 function init_map() {
-    reload_table();
     map = new maplibregl.Map({
         container: 'map', // container id
         // style: 'https://demotiles.maplibre.org/style.json', // style URL
@@ -98,7 +97,6 @@ function add_pause_icons(pauses) {
         icon.remove();
     })
     pauses.forEach(p => {
-        console.log(p);
         var el = document.createElement('div');
         el.className = 'track-icon';
 
