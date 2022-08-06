@@ -8,12 +8,12 @@ use time::OffsetDateTime;
 use crate::{track_analysis::TrackAnalysis, io};
 
 /// Scattered points within this radius can be declared as clusters -> Pauses
-const SCATTER_RADIUS: f64 = 30.0;
+const SCATTER_RADIUS: f64 = 40.0;
 /// Consecutive points must lie within a SCATTER_RADIUS for at least MIN_CLUSTER_TIME to be considered a cluster
 /// The lower this parameter, the more clusters will be found. (Combined with a low moving speed,
 /// non-existent clusters will be marked as clusters.)
 /// The higher, the more clusters will be missed.
-const MIN_CLUSTER_TIME: i64 = 60;
+const MIN_CLUSTER_TIME: i64 = 80;
 /// Intervals greater than MAX_INTERVAL are considered pauses or teleports
 const MAX_INTERVAL: i64 = 8;
 

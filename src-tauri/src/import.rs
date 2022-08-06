@@ -127,6 +127,9 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
     gpx.creator = Some(creator);
 
     let start_time = gpx.tracks[0].segments[0].points[0].time.unwrap();
+    if util::track_with_start_time_exists(&start_time.format().unwrap()) {
+        return Err(ImportError::TrackAlreadyImported); // TODO: change to dialog with overrule option
+    }
     let ulid = Ulid::from_datetime(start_time.into());
     let geojson = arrange_display(&gpx, None, &None);
     write_geojson(&geojson, ulid.clone().to_string().as_str()).unwrap();

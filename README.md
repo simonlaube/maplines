@@ -10,7 +10,6 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] load activities from strava
 - [ ] load activities from komoot
 - [x] on import check if track already present
-- [ ] reduce number of gps points per line
 - [ ] add detailed analysis of tracks (profile & speed calculation, mountain category detection, rounds)
 - [x] add activity types
 - [x] refactor importing gps files (import by copying and analyzing original files from within program)
@@ -45,6 +44,7 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 
 ## Changes to Consider (No immediate priority)
 - [ ] use cbor instead of json / geojson / gpx
+- [ ] reduce number of gps points per line
 
 ## Issues
 - [ ] When connected to internet but reception is very low, maps can't display gps lines
