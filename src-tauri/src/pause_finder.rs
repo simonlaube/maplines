@@ -95,19 +95,15 @@ fn find_clusters(gpx: &Gpx, geojson: &GeoJson) -> Vec<Pause> {
                 // check if last cluster was pause or not and continue
                 } else {
                     if time_in_radius > MIN_CLUSTER_TIME {
-                        let (mut start_index, mut end_index, c) = match trim_cluster(&cluster, &center) {
-                            Some(tc) => tc,
-                            None => (0, cluster.len().clone() - 1, cluster)
+                        match trim_cluster(&cluster, &center) {
+                            Some((mut start_index, mut end_index, c)) => {
+                                start_index += cluster_index;
+                                end_index += cluster_index;
+                                let time = OffsetDateTime::from(c.last().unwrap().time.unwrap()).unix_timestamp() - OffsetDateTime::from(c.first().unwrap().time.unwrap()).unix_timestamp();
+                                result.push(Pause::new(c.first().unwrap().point().into(), start_index, c.last().unwrap().point().into(), end_index, time as u64));
+                            },
+                            None => (),
                         };
-                        start_index += cluster_index;
-                        end_index += cluster_index;
-                        let time = OffsetDateTime::from(c.last().unwrap().time.unwrap()).unix_timestamp() - OffsetDateTime::from(c.first().unwrap().time.unwrap()).unix_timestamp();
-                        // result.push(Pause { coord_before: c.first().unwrap().point().into(), coord_after: c.last().unwrap().point().into(), duration_sec: time as u64 });
-                        // result.push(Pause { coord_before: c.last().unwrap().point().into(), coord_after: c.last().unwrap().point().into(), duration_sec: time as u64 });
-                        // result.push(Pause { coord_before: center.into(), coord_after: center.into(), duration_sec: time_in_radius as u64 });
-                        result.push(Pause::new(c.first().unwrap().point().into(), start_index, c.last().unwrap().point().into(), end_index, time as u64));
-                        // let c = &cluster;
-                        
                     }
                     pos += current_cluster.len();
                     time_in_radius = 0;
