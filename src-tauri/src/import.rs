@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use std::fs::File;
 use std::io::{self, Write, BufReader, BufWriter};
 
-use crate::type_converter::gpx_to_geojson;
+use crate::line::arrange_display;
 use crate::track_analysis::{TrackAnalysis, Activity};
 use crate::paths;
 use crate::errors::ImportError;
@@ -35,7 +35,7 @@ pub fn gpx(gpx_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
     let track: Track = gpx.tracks[0].clone();
     
     // analyze geo data
-    let geojson = gpx_to_geojson(&gpx, "placeholder");
+    let geojson = arrange_display(&gpx, None, &None);
     write_geojson(&geojson, ulid.clone().to_string().as_str()).unwrap();
     write_gpx(&gpx, &ulid.to_string()).unwrap();
     
@@ -128,7 +128,7 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
 
     let start_time = gpx.tracks[0].segments[0].points[0].time.unwrap();
     let ulid = Ulid::from_datetime(start_time.into());
-    let geojson = gpx_to_geojson(&gpx, "placeholder");
+    let geojson = arrange_display(&gpx, None, &None);
     write_geojson(&geojson, ulid.clone().to_string().as_str()).unwrap();
     write_gpx(&gpx, &ulid.to_string()).unwrap();
 

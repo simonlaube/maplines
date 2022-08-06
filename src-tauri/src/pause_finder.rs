@@ -51,7 +51,7 @@ fn find_time_jumps(gpx: &Gpx, min_break_time: u64) -> Result<Option<Vec<Pause>>,
                     // Error
                 }
                 if diff as u64 >= min_break_time {
-                    result.push(Pause { point_before: prev_point.unwrap().point().clone().into(), point_after: p.point().clone().into(), duration_sec: diff as u64 });
+                    // result.push(Pause { coord_before: prev_point.unwrap().point().clone().into(), coord_after: p.point().clone().into(), duration_sec: diff as u64 });
                 }
                 (Some(t), Some(p))
             },
@@ -70,13 +70,14 @@ fn find_clusters(gpx: &Gpx, geojson: &GeoJson) -> Vec<Pause> {
     let mut time_in_radius: i64 = 0;
     let mut center: Point<f64> = Point::new(0.0, 0.0);
     let mut cluster: Vec<&Waypoint> = vec![];
+    let mut cluster_index: usize = 0;
     while !detection_completed {
 
         detection_completed = true;
         let start_point = gpx.tracks[0].segments[0].points[pos].point();
         let start_time = OffsetDateTime::from(gpx.tracks[0].segments[0].points[pos].time.unwrap()).unix_timestamp();
         let mut current_cluster: Vec<&Waypoint> = vec![];
-        for q in gpx.tracks[0].segments[0].points[pos..].iter() {
+        for (i, q) in gpx.tracks[0].segments[0].points[pos..].iter().enumerate() {
             if start_point.haversine_distance(&q.point().into()) < SCATTER_RADIUS || current_cluster.len() < 2 {
                 current_cluster.push(q);
             } else {
@@ -87,29 +88,31 @@ fn find_clusters(gpx: &Gpx, geojson: &GeoJson) -> Vec<Pause> {
                     time_in_radius = current_time_in_radius;
                     center = current_center;
                     cluster = current_cluster;
+                    cluster_index = pos;
                     pos += index; // This loses time spent until index (CHECK THIS!!!)
                     detection_completed = false;
                     break;
                 // check if last cluster was pause or not and continue
                 } else {
                     if time_in_radius > MIN_CLUSTER_TIME {
-                        let cl = trim_cluster(&cluster, &center);
-                        
-                        match cl {
-                            Some(c) => {
-                                let time = OffsetDateTime::from(c.last().unwrap().time.unwrap()).unix_timestamp() - OffsetDateTime::from(c.first().unwrap().time.unwrap()).unix_timestamp();
-                                result.push(Pause { point_before: c.first().unwrap().point().into(), point_after: c.last().unwrap().point().into(), duration_sec: time as u64 });
-                                result.push(Pause { point_before: c.last().unwrap().point().into(), point_after: c.last().unwrap().point().into(), duration_sec: time as u64 });
-                                result.push(Pause { point_before: center.into(), point_after: center.into(), duration_sec: time_in_radius as u64 });
-                            }
-                            None => (),
-                        }
+                        let (mut start_index, mut end_index, c) = match trim_cluster(&cluster, &center) {
+                            Some(tc) => tc,
+                            None => (0, cluster.len().clone() - 1, cluster)
+                        };
+                        start_index += cluster_index;
+                        end_index += cluster_index;
+                        let time = OffsetDateTime::from(c.last().unwrap().time.unwrap()).unix_timestamp() - OffsetDateTime::from(c.first().unwrap().time.unwrap()).unix_timestamp();
+                        // result.push(Pause { coord_before: c.first().unwrap().point().into(), coord_after: c.last().unwrap().point().into(), duration_sec: time as u64 });
+                        // result.push(Pause { coord_before: c.last().unwrap().point().into(), coord_after: c.last().unwrap().point().into(), duration_sec: time as u64 });
+                        // result.push(Pause { coord_before: center.into(), coord_after: center.into(), duration_sec: time_in_radius as u64 });
+                        result.push(Pause::new(c.first().unwrap().point().into(), start_index, c.last().unwrap().point().into(), end_index, time as u64));
                         // let c = &cluster;
                         
                     }
                     pos += current_cluster.len();
                     time_in_radius = 0;
                     detection_completed = false;
+                    cluster = vec![];
                     break;
                 }
             }
@@ -140,7 +143,7 @@ fn point_closest_to_center(cluster: &Vec<&Waypoint>) -> (usize, Point<f64>) {
 
 /// Trims the in- and outgoing gps points of the cluster 
 /// if they lie in a line towards the center
-fn trim_cluster<'a>(cluster: &Vec<&'a Waypoint>, center: &'a Point<f64>) -> Option<Vec<&'a Waypoint>> {
+fn trim_cluster<'a>(cluster: &Vec<&'a Waypoint>, center: &'a Point<f64>) -> Option<(usize, usize, Vec<&'a Waypoint>)> {
     let mut start_center_dist: f64 = cluster[0].point().haversine_distance(center).abs();
     let mut start_index = 0;
     let mut c = cluster.clone();
@@ -175,12 +178,26 @@ fn trim_cluster<'a>(cluster: &Vec<&'a Waypoint>, center: &'a Point<f64>) -> Opti
     if OffsetDateTime::from(c.last().unwrap().time.unwrap()).unix_timestamp() - OffsetDateTime::from(c[0].time.unwrap()).unix_timestamp() < MAX_INTERVAL {
         return None
     }
-    Some(c)
+    let length = c.len().clone();
+    Some((start_index, start_index + length - 1, c))
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Pause {
-    pub point_before: (f64, f64),
-    pub point_after: (f64, f64),
+    pub coord_before: (f64, f64),
+    pub index_before: usize,
+    pub coord_after: (f64, f64),
+    pub index_after: usize,
     pub duration_sec: u64,
+}
+
+impl Pause {
+    fn new(cb: (f64, f64), ib: usize, ca: (f64, f64), ia: usize, ds: u64) -> Pause {
+        Pause {
+            coord_before: cb,
+            index_before: ib,
+            coord_after: ca,
+            index_after: ia,
+            duration_sec: ds }
+    }
 }

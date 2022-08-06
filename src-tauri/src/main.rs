@@ -13,7 +13,7 @@ extern crate time;
 mod import;
 mod io;
 mod track_analysis;
-mod type_converter;
+mod line;
 mod paths;
 mod pause_finder;
 mod errors;
@@ -117,7 +117,7 @@ fn main() {
       }
       _ => {}
     })
-    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis])
+    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
   paths::create_dirs_if_not_exist();
@@ -159,4 +159,15 @@ fn load_geojson(ulid: String) -> Option<GeoJson> {
 #[tauri::command]
 fn load_pauses(ulid: String) -> Option<Vec<Pause>> {
   pause_finder::find(io::read_track_analysis(&ulid).unwrap())
+}
+
+#[tauri::command]
+fn calculate_pauses(ulid: String) -> Option<(Vec<Pause>, GeoJson)> {
+  let pauses = pause_finder::find(io::read_track_analysis(&ulid).unwrap());
+  let lines = line::arrange_display(&io::read_gpx(&ulid).unwrap(), None, &pauses);
+  let result: Option<(Vec<Pause>, GeoJson)> = match (pauses, lines) {
+    ((Some(p), l)) => Some((p, l)),
+    _ => None,
+  };
+  result
 }

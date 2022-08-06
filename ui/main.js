@@ -67,20 +67,31 @@ function add_to_table(entry, sort) {
         toggle_row_selection(entry.ulid);
         document.getSelection().removeAllRanges();
 
-        invoke('load_geojson', { ulid: entry.ulid })
+        //invoke('load_geojson', { ulid: entry.ulid })
+        invoke('calculate_pauses', { ulid: entry.ulid })
         .then(async (response) => {
+            var geometries = response[1].geometry.geometries;
+            var move = geometries[0];
+            var pause = geometries[1];
+            var uned_pause = geometries[2];
             var line = map.getSource('gps-line');
-            line.setData(response);
+            line.setData(move);
+            var up = map.getSource('uned-pause-line');
+            up.setData(uned_pause);
+            var p = map.getSource('pause-line');
+            p.setData(pause);
             var bbox = [[entry.x_min[0], entry.y_min[1]], [entry.x_max[0], entry.y_max[1]]];
             map.fitBounds(bbox, {
                 padding: { top: 25, bottom: 25, left: 25, right: 25 }
             });
+            add_pause_icons(response[0]);
         });
         add_track_icons(entry);
+        /*
         invoke('load_pauses', { ulid: entry.ulid })
         .then((response) => {
             add_pause_icons(response);
-        })
+        })*/
         
     });
     if (sort) {

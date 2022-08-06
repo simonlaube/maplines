@@ -37,6 +37,56 @@ function init_map() {
                 'line-width': 3
             }
         });
+        map.addSource('uned-pause-line', {
+            'type': 'geojson',
+            'data': {
+                'type': 'Feature',
+                'properties': {},
+                'geometry': {
+                    'type': 'LineString',
+                    'coordinates': []
+                }
+            }
+        });
+        map.addLayer({
+            'id': 'uned-pause-line',
+            'type': 'line',
+            'source': 'uned-pause-line',
+            'layout': {
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            'paint': {
+                'line-color': '#9f2dcf',
+                'line-width': 3,
+                'line-opacity': 0.2
+            }
+        });
+        map.addSource('pause-line', {
+            'type': 'geojson',
+            'data': {
+                'type': 'Feature',
+                'properties': {},
+                'geometry': {
+                    'type': 'LineString',
+                    'coordinates': []
+                }
+            }
+        });
+        map.addLayer({
+            'id': 'pause-line',
+            'type': 'line',
+            'source': 'pause-line',
+            'layout': {
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            'paint': {
+                'line-color': '#f80',
+                'line-width': 3,
+                'line-dasharray': [2, 2]
+            }
+        });
     });
 }
 
@@ -103,6 +153,8 @@ function add_pause_icons(pauses) {
         var size = 15;
         if (p.duration_sec < 600) { // Pause was shorter than 10 minutes
             size = 10;
+        } else if (p.duration_sec > 3600) { // Pause was longer than 1 hour
+            size = 20;
         }
         el.style.backgroundImage = "url('icons/pause-button2.png')"
         el.style.width = size + 'px';
@@ -117,7 +169,7 @@ function add_pause_icons(pauses) {
             
         // add marker to map
         new maplibregl.Marker(el)
-        .setLngLat([p.point_before[0], p.point_before[1]])
+        .setLngLat([p.coord_before[0] + (p.coord_after[0] - p.coord_before[0]) / 2, p.coord_before[1] + (p.coord_after[1] - p.coord_before[1]) / 2])
         .addTo(map);
     });
 }
