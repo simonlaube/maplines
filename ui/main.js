@@ -68,7 +68,8 @@ function add_to_table(entry, sort) {
         document.getSelection().removeAllRanges();
 
         //invoke('load_geojson', { ulid: entry.ulid })
-        invoke('calculate_pauses', { ulid: entry.ulid })
+        //invoke('calculate_pauses', { ulid: entry.ulid })
+        invoke('load_track_display_data', { ulid: entry.ulid })
         .then(async (response) => {
             var geometries = response[1].geometry.geometries;
             var move = geometries[0];

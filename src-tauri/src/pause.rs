@@ -22,6 +22,7 @@ const MAX_INTERVAL: i64 = 8;
 
 /// Returns an Option containing the points before and after the break
 /// and the time passed in seconds.
+/*
 pub fn find(track_analysis: TrackAnalysis) -> Option<Vec<Pause>> {
     let geojson = io::read_geojson(&track_analysis.ulid);
     let gpx = io::read_gpx(&track_analysis.ulid);
@@ -34,6 +35,11 @@ pub fn find(track_analysis: TrackAnalysis) -> Option<Vec<Pause>> {
         }
         _ => return None
     }
+}
+*/
+
+pub fn find(geojson: &GeoJson, gpx: &Gpx) -> Vec<Pause> {
+    return find_clusters(gpx, geojson)
 }
 
 // TODO: Error handling
@@ -178,7 +184,7 @@ fn trim_cluster<'a>(cluster: &Vec<&'a Waypoint>, center: &'a Point<f64>) -> Opti
     Some((start_index, start_index + length - 1, c))
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Pause {
     pub coord_before: (f64, f64),
     pub index_before: usize,

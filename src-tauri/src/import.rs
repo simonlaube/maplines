@@ -14,13 +14,14 @@ use std::io::{self, Write, BufReader, BufWriter};
 use crate::line::arrange_display;
 use crate::track_analysis::{TrackAnalysis, Activity};
 use crate::paths;
-use crate::errors::ImportError;
+use crate::errors::MaplineError;
 use crate::util;
 
-pub fn gpx(gpx_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
+pub fn gpx(gpx_path: &PathBuf) -> Result<TrackAnalysis, MaplineError> {
     let file = File::open(gpx_path).unwrap();
     let reader = BufReader::new(file);
     let mut gpx = read(reader).unwrap(); // TODO: remove unwrap
+    let geojson = arrange_display(&gpx, None, None);
     
     // TODO: implement
     optimize_gpx(&gpx);
@@ -28,25 +29,25 @@ pub fn gpx(gpx_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
     // TODO: take care of files with multiple tracks or segments
     let start_time = gpx.tracks[0].segments[0].points[0].time.unwrap();
     if util::track_with_start_time_exists(&start_time.format().unwrap()) {
-        return Err(ImportError::TrackAlreadyImported); // TODO: change to dialog with overrule option
+        return Err(MaplineError::TrackAlreadyImported); // TODO: change to dialog with overrule option
     }
     // TODO: Check if start_time already present in previous tracks
     let ulid = Ulid::from_datetime(start_time.into());
     let track: Track = gpx.tracks[0].clone();
     
     // analyze geo data
-    let geojson = arrange_display(&gpx, None, &None);
+    let track_analysis = TrackAnalysis::from_import(&ulid, &start_time, &track, &geojson, &gpx, None);
+    write_track_analysis(&track_analysis).unwrap();
+    let geojson = arrange_display(&gpx, Some(geojson), Some(&track_analysis.pauses));
     write_geojson(&geojson, ulid.clone().to_string().as_str()).unwrap();
     write_gpx(&gpx, &ulid.to_string()).unwrap();
     
-    let track_analysis = TrackAnalysis::from_import(&ulid, &start_time, &track, gpx.creator, geojson, None);
-    write_track_analysis(&track_analysis).unwrap();
     Ok(track_analysis)
 }
 
-pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
+pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, MaplineError> {
     let mut fp = match File::open(fit_path) {
-        Err(err) => return Err(ImportError::ImportError(err.to_string())),
+        Err(err) => return Err(MaplineError::ImportError(err.to_string())),
         Ok(f) => f,
     };
     // import creator and add to gpx
@@ -54,21 +55,24 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
     let mut creator: String = "unknown".to_string();
     let mut track_segment = TrackSegment::new();
     let parsed_fit = match fitparser::from_reader(&mut fp) {
-        Err(err) => return Err(ImportError::ImportError(err.to_string())),
+        Err(err) => return Err(MaplineError::ImportError(err.to_string())),
         Ok(pf) => pf,
     };
     
+    // TODO: use field enhanced_speed
     for data in parsed_fit {
         if data.kind() == profile::MesgNum::Record {
             let mut lat: Option<f64> = None;
             let mut long: Option<f64> = None;
             // let ele: i32;
             let mut timestamp: Option<DateTime<Utc>> = None;
+            // println!("{:#?}", data);
             for f in data.fields() {
                 match f.name() {
                     "position_lat" => lat = Some(f.value().to_string().parse::<f64>().unwrap() * 0.000000083819032),
                     "position_long" => long = Some(f.value().to_string().parse::<f64>().unwrap() * 0.000000083819032),
                     "timestamp" => timestamp = Some(f.value().to_string().parse::<DateTime<Utc>>().unwrap()),
+                    // "enhanced_speed" => (),
                     _ => (),
                 }
             }
@@ -88,7 +92,7 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
                 match f.name() {
                     "type" => {
                         if f.value().to_string() != "activity" {
-                            return Err(ImportError::FitFileNotAnActivity);
+                            return Err(MaplineError::FitFileNotAnActivity);
                         }
                     }
                     "manufacturer" => creator = f.value().to_string(),
@@ -118,6 +122,7 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
                 }
             }
         }
+
     }
     let mut track = Track::new();
     track.segments.push(track_segment);
@@ -127,16 +132,18 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, ImportError> {
     gpx.creator = Some(creator);
 
     let start_time = gpx.tracks[0].segments[0].points[0].time.unwrap();
+    // TODO: check this earlier
     if util::track_with_start_time_exists(&start_time.format().unwrap()) {
-        return Err(ImportError::TrackAlreadyImported); // TODO: change to dialog with overrule option
+        return Err(MaplineError::TrackAlreadyImported); // TODO: change to dialog with overrule option
     }
     let ulid = Ulid::from_datetime(start_time.into());
-    let geojson = arrange_display(&gpx, None, &None);
+    let geojson = arrange_display(&gpx, None, None);
+
+    let track_analysis = TrackAnalysis::from_import(&ulid, &start_time, &gpx.tracks[0], &geojson, &gpx, Some(activity));
+    write_track_analysis(&track_analysis).unwrap();
+    let geojson = arrange_display(&gpx, Some(geojson), Some(&track_analysis.pauses));
     write_geojson(&geojson, ulid.clone().to_string().as_str()).unwrap();
     write_gpx(&gpx, &ulid.to_string()).unwrap();
-
-    let track_analysis = TrackAnalysis::from_import(&ulid, &start_time, &gpx.tracks[0], gpx.creator, geojson, Some(activity));
-    write_track_analysis(&track_analysis).unwrap();
     Ok(track_analysis)
 }
 

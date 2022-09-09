@@ -1,9 +1,9 @@
 use gpx::{Gpx, Track, TrackSegment};
 use geojson::{self, Feature, GeoJson, Geometry, JsonObject, JsonValue, Value, PointType, LineStringType};
 
-use crate::pause_finder::Pause;
+use crate::pause::Pause;
 
-pub fn arrange_display(gpx: &Gpx, geojson_orig: Option<GeoJson>, pauses: &Option<Vec<Pause>>) -> GeoJson {
+pub fn arrange_display(gpx: &Gpx, geojson_orig: Option<GeoJson>, pauses: Option<&Vec<Pause>>) -> GeoJson {
     let geojson = match pauses {
         None => {
             match geojson_orig {
@@ -104,7 +104,7 @@ fn compose_with_pauses(gpx: &Gpx, pauses: &Vec<Pause>) -> GeoJson {
         }
     }
     move_lines.push(line_move);
-    
+
     let move_geometry = Geometry::new(Value::MultiLineString(move_lines));
     let pause_geometry = Geometry::new(Value::MultiLineString(pause_lines));
     let uned_pause_geometry = Geometry::new(Value::MultiLineString(uned_pause_lines));

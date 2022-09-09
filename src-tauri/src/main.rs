@@ -9,23 +9,28 @@ extern crate geo;
 extern crate gpx;
 extern crate geojson;
 extern crate time;
+extern crate geotiff;
+extern crate reqwest;
+extern crate tokio;
 
 mod import;
 mod io;
 mod track_analysis;
 mod line;
 mod paths;
-mod pause_finder;
+mod pause;
 mod errors;
 mod settings;
 mod util;
+mod elevation;
+mod distance;
 
 use std::ffi::OsStr;
 use std::fs;
 use std::path::PathBuf;
-use errors::ImportError;
+use errors::MaplineError;
 use geojson::GeoJson;
-use pause_finder::Pause;
+use pause::Pause;
 use track_analysis::TrackAnalysis;
 use settings::Settings;
 use tauri::api::{dialog, dir};
@@ -104,8 +109,12 @@ fn main() {
             .collect();
             for p in paths {
               if p.extension() == Some(OsStr::new("fit")) || p.extension() == Some(OsStr::new("FIT")) {
-                let track_analysis = import::fit(&p).unwrap();
-                event.window().emit("track_import", track_analysis).unwrap();
+                
+                match import::fit(&p) {
+                  Ok(ta) => event.window().emit("track_import", ta).unwrap(),
+                  _ => ()
+                }
+                
               } else if p.extension() == Some(OsStr::new("gpx")) {
                 let track_analysis = import::gpx(&p).unwrap();
                 event.window().emit("track_import", track_analysis).unwrap();
@@ -117,7 +126,7 @@ fn main() {
       }
       _ => {}
     })
-    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses])
+    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses, load_track_display_data])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
   paths::create_dirs_if_not_exist();
@@ -157,17 +166,27 @@ fn load_geojson(ulid: String) -> Option<GeoJson> {
   */
 }
 #[tauri::command]
-fn load_pauses(ulid: String) -> Option<Vec<Pause>> {
-  pause_finder::find(io::read_track_analysis(&ulid).unwrap())
+fn load_pauses(ulid: String) -> Vec<Pause> {
+  pause::find(&io::read_geojson(&ulid).unwrap(), &io::read_gpx(&ulid).unwrap())
 }
 
 #[tauri::command]
 fn calculate_pauses(ulid: String) -> Option<(Vec<Pause>, GeoJson)> {
-  let pauses = pause_finder::find(io::read_track_analysis(&ulid).unwrap());
-  let lines = line::arrange_display(&io::read_gpx(&ulid).unwrap(), None, &pauses);
-  let result: Option<(Vec<Pause>, GeoJson)> = match (pauses, lines) {
-    ((Some(p), l)) => Some((p, l)),
-    _ => None,
-  };
-  result
+  let gpx = io::read_gpx(&ulid).unwrap();
+  // elevation::from_latlong(gpx);
+  // elevation::from_latlong(gpx);
+  // distance::from_track_analysis(&io::read_track_analysis(&ulid).unwrap());
+  // println!("done");
+
+  // let pauses = pause::find(io::read_track_analysis(&ulid).unwrap());
+  let pauses = load_pauses(ulid.clone());
+  let lines = line::arrange_display(&io::read_gpx(&ulid).unwrap(), None, Some(&pauses));
+  Some((pauses, lines))
+}
+
+#[tauri::command]
+fn load_track_display_data(ulid: String) -> Option<(Vec<Pause>, GeoJson)> {
+  let geojson = io::read_geojson(&ulid).unwrap();
+  let track_analysis = io::read_track_analysis(&ulid).unwrap();
+  Some((track_analysis.pauses, geojson))
 }

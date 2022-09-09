@@ -1,7 +1,8 @@
 #[derive(Debug)]
-pub enum ImportError {
+pub enum MaplineError {
     GpxFileNotValid,
     FitFileNotAnActivity,
     ImportError(String),
     TrackAlreadyImported,
+    CouldNotLoadElevation,
 }

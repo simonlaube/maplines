@@ -7,8 +7,6 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 - [x] add user settings (e.g. default smart watches import path, ...)
 - [x] import fit files
 - [x] load activities from garmin
-- [ ] load activities from strava
-- [ ] load activities from komoot
 - [x] on import check if track already present
 - [ ] add detailed analysis of tracks (profile & speed calculation, mountain category detection, rounds)
 - [x] add activity types
@@ -19,6 +17,9 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] add deleting & archiving of tracks
 - [ ] add editing of tracks and their metadata
 - [ ] add error dialog box
+- [ ] multiple pause detection iterations (different radii)
+- [ ] use fit field "enhanced speed"
+- [ ] join tracks
 
 ## More Distant Future Features
 - [ ] add tags
@@ -32,6 +33,10 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] distinction of recorded tracks and planned tracks
 - [ ] map select desired layers to display
 - [ ] try to approximate gps lines to streets of OSM
+- [ ] add images and comments to track / route
+- [ ] load activities from strava
+- [ ] load activities from komoot
+- [ ] check for useful fit fields of other devices
 
 
 ## Future Design Improvements

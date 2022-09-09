@@ -2,11 +2,13 @@ use geo::Extremes;
 use geojson::{GeoJson, Feature, Value, };
 use serde::{Serialize, Deserialize};
 use ulid;
-use gpx::{Time, Track};
+use gpx::{Time, Track, Gpx};
 use std::path::PathBuf;
 use std::fs::{self, File};
 
 use crate::paths;
+use crate::distance;
+use crate::pause::{self, Pause};
 /// same as Track but without links and segments
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TrackAnalysis {
@@ -26,6 +28,8 @@ pub struct TrackAnalysis {
     pub y_max: (f64, f64),
     pub start_coords: (f64, f64),
     pub end_coords: (f64, f64),
+    pub distance: f64, // in kilometers
+    pub pauses: Vec<Pause>,
 }
 
 impl TrackAnalysis {
@@ -35,9 +39,9 @@ impl TrackAnalysis {
         Ok(ta)
     }
 
-    pub fn from_import(ulid: &ulid::Ulid, start_time: &Time, track: &Track, creator: Option<String>, geojson: GeoJson, activity: Option<Activity>) -> TrackAnalysis {
+    pub fn from_import(ulid: &ulid::Ulid, start_time: &Time, track: &Track, geojson: &GeoJson, gpx: &Gpx, activity: Option<Activity>) -> TrackAnalysis {
 
-        let feature: Feature = Feature::try_from(geojson).unwrap();
+        let feature: Feature = Feature::try_from(geojson.clone()).unwrap();
         let gj_geometry: geojson::Geometry = feature.geometry.unwrap();
 
         // Change to Result instead of panic
@@ -54,6 +58,8 @@ impl TrackAnalysis {
             None => activity_type_from_track(&track),
             Some(a) => a,
         };
+        let distance = distance::from_gpx(gpx);
+        let pauses: Vec<Pause> = pause::find(&geojson, gpx);
 
         TrackAnalysis {
             version: crate::ANALYSIS_VERSION,
@@ -65,13 +71,15 @@ impl TrackAnalysis {
             source: track.source.clone(),
             _type: activity,
             number: track.number,
-            creator: creator,
+            creator: gpx.creator.clone(),
             x_min: extremes.x_min.coord.into(),
             x_max: extremes.x_max.coord.into(),
             y_min: extremes.y_min.coord.into(),
             y_max: extremes.y_max.coord.into(),
             start_coords,
             end_coords,
+            distance,
+            pauses,
         }
     }
 }

@@ -25,8 +25,16 @@ pub fn geojson() -> PathBuf {
     geojson_path
 }
 
+// Shuttle Radar Topographic Mission
+pub fn srtm() -> PathBuf {
+    let mut srtm_path = maplines();
+    srtm_path.push("srtm");
+    srtm_path
+}
+
 pub fn create_dirs_if_not_exist() {
     fs::create_dir_all(track_analysis()).unwrap();
     fs::create_dir_all(gpx()).unwrap();
     fs::create_dir_all(geojson()).unwrap();
+    fs::create_dir_all(srtm()).unwrap();
 }
