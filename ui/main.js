@@ -52,11 +52,13 @@ function add_to_table(entry, sort) {
     let time = row.insertCell(1);
     let datetime = new Date(entry.start_time);
     time.innerHTML = datetime.toLocaleDateString();
-    let name = row.insertCell(2);
-    name.innerHTML = entry.name;
-    let type = row.insertCell(3);
+    let type = row.insertCell(2);
     type.innerHTML = entry._type;
-    let creator = row.insertCell(4);
+    let name = row.insertCell(3);
+    name.innerHTML = entry.name;
+    let distance = row.insertCell(4);
+    distance.innerHTML = (entry.distance / 1000).toFixed(2);
+    let creator = row.insertCell(5);
     creator.innerHTML = entry.creator;
 
     row.addEventListener("click", (event) => {

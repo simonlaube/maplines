@@ -58,8 +58,8 @@ impl TrackAnalysis {
             None => activity_type_from_track(&track),
             Some(a) => a,
         };
-        let distance = distance::from_gpx(gpx);
         let pauses: Vec<Pause> = pause::find(&geojson, gpx);
+        let distance = distance::calculate(gpx, &pauses);
 
         TrackAnalysis {
             version: crate::ANALYSIS_VERSION,

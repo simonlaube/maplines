@@ -27,6 +27,7 @@ pub fn gpx(gpx_path: &PathBuf) -> Result<TrackAnalysis, MaplineError> {
     optimize_gpx(&gpx);
 
     // TODO: take care of files with multiple tracks or segments
+    // TODO: handle files with no timestamp
     let start_time = gpx.tracks[0].segments[0].points[0].time.unwrap();
     if util::track_with_start_time_exists(&start_time.format().unwrap()) {
         return Err(MaplineError::TrackAlreadyImported); // TODO: change to dialog with overrule option
@@ -37,8 +38,8 @@ pub fn gpx(gpx_path: &PathBuf) -> Result<TrackAnalysis, MaplineError> {
     
     // analyze geo data
     let track_analysis = TrackAnalysis::from_import(&ulid, &start_time, &track, &geojson, &gpx, None);
-    write_track_analysis(&track_analysis).unwrap();
     let geojson = arrange_display(&gpx, Some(geojson), Some(&track_analysis.pauses));
+    write_track_analysis(&track_analysis).unwrap();
     write_geojson(&geojson, ulid.clone().to_string().as_str()).unwrap();
     write_gpx(&gpx, &ulid.to_string()).unwrap();
     
