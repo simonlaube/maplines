@@ -16,6 +16,7 @@ use crate::track_analysis::{TrackAnalysis, Activity};
 use crate::paths;
 use crate::errors::MaplineError;
 use crate::util;
+use crate::io::{write_geojson, write_gpx, write_track_analysis};
 
 pub fn gpx(gpx_path: &PathBuf) -> Result<TrackAnalysis, MaplineError> {
     let file = File::open(gpx_path).unwrap();
@@ -150,36 +151,4 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, MaplineError> {
 
 fn optimize_gpx(gpx: &Gpx) {
     // todo!("reduce number of track points");
-}
-
-fn write_track_analysis(ta: &TrackAnalysis) -> Result<(), io::Error> {
-    let mut path = paths::track_analysis();
-    path.push(ta.ulid.clone().to_string());
-    path.set_extension("json");
-    write_file(path, serde_json::to_string(ta)?)?;
-    Ok(())
-}
-
-fn write_gpx(gpx: &Gpx, ulid: &str) -> Result<(), io::Error> {
-    let mut path = paths::gpx();
-    path.push(ulid);
-    path.set_extension("gpx");
-    let file = File::create(path)?;
-    let writer = BufWriter::new(file);
-    gpx::write(gpx, writer).unwrap();
-    Ok(())
-}
-
-fn write_geojson(geojson: &GeoJson, ulid: &str) -> Result<(), io::Error> {
-    let mut path = paths::geojson();
-    path.push(ulid);
-    path.set_extension("geojson");
-    write_file(path, geojson.to_string())?;
-    Ok(())
-}
-
-fn write_file(path: PathBuf, content: String) -> Result<(), io::Error> {
-    let mut file = File::create(path).unwrap();
-    write!(file, "{}", content)?;
-    Ok(())
 }

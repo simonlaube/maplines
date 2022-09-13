@@ -160,3 +160,4 @@ function comparatorDate(a, b) {
     let b_date = new Date(b.value.start_time);
     return (a_date < b_date) - (a_date > b_date);
 }
+

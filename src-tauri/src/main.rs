@@ -126,7 +126,7 @@ fn main() {
       }
       _ => {}
     })
-    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses, load_track_display_data])
+    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses, load_track_display_data, save_track_changes])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
   paths::create_dirs_if_not_exist();
@@ -189,4 +189,19 @@ fn load_track_display_data(ulid: String) -> Option<(Vec<Pause>, GeoJson)> {
   let geojson = io::read_geojson(&ulid).unwrap();
   let track_analysis = io::read_track_analysis(&ulid).unwrap();
   Some((track_analysis.pauses, geojson))
+}
+
+#[tauri::command]
+fn save_track_changes(ulid: String, name: String, activity: String) {
+  let mut track_analysis = io::read_track_analysis(&ulid).unwrap();
+  track_analysis.name = Some(name.clone());
+  track_analysis._type = track_analysis::activity_type_from_string(&activity);
+  io::write_track_analysis(&track_analysis);
+  // gpx writing takes longer and is therefore handled in separate thread
+  std::thread::spawn(move || {
+    println!("{} : {} : {}", ulid, name, activity);
+    let mut gpx = io::read_gpx(&ulid).unwrap();
+    gpx.tracks[0].name = Some(name);
+    io::write_gpx(&gpx, &ulid);
+  });
 }

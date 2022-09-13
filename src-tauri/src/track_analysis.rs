@@ -149,3 +149,16 @@ fn activity_type_from_track(track: &Track) -> Activity {
         None => Activity::Generic
     }
 }
+
+pub fn activity_type_from_string(activity: &String) -> Activity {
+    match activity.to_lowercase().as_str() {
+        "cross country skiing" => Activity::CrossCountrySkiing,
+        "cycling" => Activity::Cycling,
+        "generic" => Activity::Generic, // default value
+        "hiking" => Activity::Hiking,
+        "inline skating" => Activity::InlineSkating,
+        "running" => Activity::Running,
+        "swimming" => Activity::Swimming,
+        _ => Activity::UserDefined,
+    }
+}

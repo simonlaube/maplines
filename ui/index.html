@@ -7,6 +7,7 @@
     <!--script type=module src="map.js"></script-->
     <script type="text/javascript" src="main.js"></script>
     <script type="text/javascript" src="map.js"></script>
+    <script type="text/javascript" src="editRow.js"></script>
     <link rel="stylesheet" href="main.css">
 
     <script src="maplibre-gl@2.1.9/dist/maplibre-gl.js"></script>
@@ -16,8 +17,30 @@
   </head>
   <body>
     <div class="grid-container">
-      <h1 id="title-bar">Maplines temp titlebar</h1>
+      <div id="menu-bar">
+        <div id="table-buttons-wrapper">
+          <button id="table-button-edit" onclick="editRow()">Edit</button>
+        </div>
+      </div>
       <div id="gpx-table-wrapper">
+
+        <div id="table-overlay">
+          <div id="row-edit">
+            <p id="multiple-rows-warning" class="warning-text">Warning: Multiple rows will be edited.</p>
+            <p id="invalid-characters-alert" class="alert-text">Alert: Invalid Characters.</p>
+            <div class="horizontal-wrapper">
+              <p class="text-title">Activity:</p>
+              <input class="input-field" id="activity-input" type="text" onblur="checkInput('activity')" onfocus="focusInput('activity')">
+            </div>
+            <div class="horizontal-wrapper">
+              <p class="text-title">Name:</p>
+              <input class="input-field" id="name-input" type="text" onblur="checkInput('name')" onfocus="focusInput('name')">
+            </div>
+            <button id="cancel-row-edit" onclick="cancelEditRow()">Cancel</button>
+            <button id="save-row-edit" onclick="saveEditRow()">Save</button>
+          </div>
+        </div>
+
         <table id="gpx-table">
           <thead>
             <th>Date</th>

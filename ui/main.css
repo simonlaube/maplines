@@ -35,6 +35,45 @@ h1 {
     font-family: 'Epilogue';
     font-size:medium;
 }
+
+.text-title {
+    font-family: 'PT-Root-UI';
+    font-size:smaller;
+}
+
+.warning-text {
+    font-family: 'Vela-Sans';
+    font-size: small;
+    font-weight: 800;
+    color: #333;
+    background-color: #f5c25f;
+    text-align: center;
+    padding: 0.2rem;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    border-radius: 1px;
+    box-shadow: 0px 2px 4px #ccc;
+}
+
+.alert-text {
+    font-family: 'Vela-Sans';
+    font-size: small;
+    font-weight: 800;
+    color: #333;
+    background-color: #ff6473;
+    text-align: center;
+    padding: 0.2rem;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    border-radius: 1px;
+    box-shadow: 0px 2px 4px #ccc;
+    display: none;
+}
+
+.input-field {
+    color: #888;
+}
+
 html {
     height: 100%;
 }
@@ -57,7 +96,7 @@ body {
     padding-right: 3rem;
 }
 
-#title-bar {
+#menu-bar {
     grid-column-start: 1;
     grid-column-end: 3;
     grid-row-start: 1;
@@ -68,6 +107,7 @@ body {
 }
 
 #gpx-table-wrapper {
+    position: relative;
     grid-column-start: 1;
     grid-column-end: 2;
     grid-row-start: 2;
@@ -79,6 +119,7 @@ body {
 }
 
 #gpx-table {
+    position: absolute;
     display: table;
     border-collapse: collapse;
     /*margin-left: 0.2rem;*/
@@ -138,8 +179,10 @@ th, td {
 table th + th { border-left: 1px solid #ddd; }*/
 tr:nth-child(odd) { background-color: #fff; }
 tr:nth-child(even) { background-color: #f2f2f2; }
-.selected-row:nth-child(odd) { background-color: #f55; }
-.selected-row:nth-child(even) { background-color: #f33; }
+/*.selected-row:nth-child(odd) { background-color: #f55; }
+.selected-row:nth-child(even) { background-color: #f33; }*/
+.selected-row:nth-child(odd) { background-color: rgb(194, 146, 213); }
+.selected-row:nth-child(even) { background-color: rgb(170, 117, 190); }
 
 tbody tr:hover * {
     background-color: #e2e2e2;
@@ -147,7 +190,8 @@ tbody tr:hover * {
 }
 
 tbody .selected-row:hover * {
-    background-color: #d22;
+    /*background-color: #d22;*/
+    background-color: rgb(173, 85, 207);
 }
 
 tbody tr:hover td {
@@ -164,4 +208,25 @@ tbody tr:hover td {
     background-size: cover;
     cursor: pointer;
 }
-/*tbody tr:*/
+
+#table-overlay {
+    background-color: rgba(0,0,0,0.5);;
+    display: none;
+    justify-content:center;
+    align-items: center;
+    width: inherit;
+    height: inherit;
+    position: absolute;
+    z-index: 5;
+}
+#row-edit {
+    width: 300px;
+    height: 450px;
+    background-color: #fff;
+    padding: 1rem;
+}
+.horizontal-wrapper {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 30% 70%;
+}
