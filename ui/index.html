@@ -21,50 +21,62 @@
         <div id="table-buttons-wrapper">
           <button id="table-button-edit" onclick="editRow()">Edit</button>
         </div>
+        <div id="display-buttons-wrapper">
+          <button id="table-only">|==|</button>
+          <button id="table-map">|=|M|</button>
+          <button id="map-only">|MM|</button>
+        </div>
       </div>
-      <div id="gpx-table-wrapper">
 
-        <div id="table-overlay">
-          <div id="row-edit">
-            <p id="multiple-rows-warning" class="warning-text">Warning: Multiple rows will be edited.</p>
-            <p id="invalid-characters-alert" class="alert-text">Alert: Invalid Characters.</p>
-            <div class="horizontal-wrapper">
-              <p class="text-title">Activity:</p>
-              <!--input class="input-field" id="activity-input" type="text" onblur="checkInput('activity')" onfocus="focusInput('activity')"-->
-              <form id="activity-form">
-                <select id = "activity-input" oninput="checkInput('activity')">
-                   <option value = "CrossCountrySkiing" selected>Cross Country Skiing</option>
-                   <option value = "Cycling">Cycling</option>
-                   <option value = "Generic">Generic</option>
-                   <option value = "Hiking">Hiking</option>
-                   <option value = "InlineSkating">Inline Skating</option>
-                   <option value = "Running">Running</option>
-                   <option value = "Swimming">Swimming</option>
-                </select>
-             </form>
+      <div id="content-wrapper">
+        <div id="gpx-table-wrapper">
+
+          <div id="table-overlay">
+            <div id="row-edit">
+              <p id="multiple-rows-warning" class="warning-text">Warning: Multiple rows will be edited.</p>
+              <p id="invalid-characters-alert" class="alert-text">Alert: Invalid Characters.</p>
+              <div class="horizontal-wrapper">
+                <p class="text-title">Activity:</p>
+                <!--input class="input-field" id="activity-input" type="text" onblur="checkInput('activity')" onfocus="focusInput('activity')"-->
+                <form id="activity-form">
+                  <select id = "activity-input" oninput="checkInput('activity')">
+                     <option value = "CrossCountrySkiing" selected>Cross Country Skiing</option>
+                     <option value = "Cycling">Cycling</option>
+                     <option value = "Generic">Generic</option>
+                     <option value = "Hiking">Hiking</option>
+                     <option value = "InlineSkating">Inline Skating</option>
+                     <option value = "Running">Running</option>
+                     <option value = "Swimming">Swimming</option>
+                  </select>
+               </form>
+              </div>
+              <div class="horizontal-wrapper">
+                <p class="text-title">Name:</p>
+                <input class="input-field" id="name-input" type="text" onblur="checkInput('name')" onfocus="focusInput('name')">
+              </div>
+              <button id="cancel-row-edit" onclick="cancelEditRow()">Cancel</button>
+              <button id="save-row-edit" onclick="saveEditRow()">Save</button>
             </div>
-            <div class="horizontal-wrapper">
-              <p class="text-title">Name:</p>
-              <input class="input-field" id="name-input" type="text" onblur="checkInput('name')" onfocus="focusInput('name')">
-            </div>
-            <button id="cancel-row-edit" onclick="cancelEditRow()">Cancel</button>
-            <button id="save-row-edit" onclick="saveEditRow()">Save</button>
           </div>
+  
+          <table id="gpx-table">
+            <thead>
+              <th>Date</th>
+              <th>Activity</th>
+              <th>Name</th>
+              <th>Distance (km)</th>
+              <th>Creator</th>
+            </thead>
+            <tbody id="gpxTableBody"></tbody>
+          </table>
         </div>
 
-        <table id="gpx-table">
-          <thead>
-            <th>Date</th>
-            <th>Activity</th>
-            <th>Name</th>
-            <th>Distance (km)</th>
-            <th>Creator</th>
-          </thead>
-          <tbody id="gpxTableBody"></tbody>
-        </table>
-      </div>
-      <div id="map-wrapper">
-        <div id="map"></div>
+        <div id="content-separator">
+          <div id="separator-hitbox"></div>
+        </div>
+        <div id="map-wrapper">
+          <div id="map"></div>
+        </div>
       </div>
       
       <div id="button-wrapper-footer">

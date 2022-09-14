@@ -100,12 +100,15 @@ function saveEditRow() {
         cancelEditRow();
     } else if (selected_rows.length == 1) {
         // check for every entry if input is valid
-        invoke("save_track_changes", { ulid: selected_rows[0], name: name, activity: activity })
+        let ulid = selected_rows[0];
+        invoke("save_track_changes", { ulid: ulid, name: name, activity: activity })
         .then(() => {
             reload_table();
             var rows = table_body.querySelectorAll("tr");
             rows.forEach(row => {
-                if (row.querySelectorAll("td")[0].innerHTML == selected_rows[0]) {
+                if (row.querySelectorAll("td")[0].innerHTML == ulid) {
+                    clear_table_selection();
+                    toggle_row_selection(ulid);
                     cancelEditRow();
                     return;
                 }

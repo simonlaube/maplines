@@ -11,6 +11,7 @@ var selected_rows;
 window.onload = init;
 
 function init() {
+    initContentResize();
     reload_table();
     init_map();
     selected_rows = [];
@@ -19,6 +20,44 @@ function init() {
 listen("track_import", ev => {
     add_to_table(ev.payload, true);
 });
+
+function initContentResize() {
+    let separator = document.getElementById("content-separator");
+    separator.addEventListener("mousedown", (e) => {
+        /*e.preventDefault();
+        let percentLeft = e.clientX / e.view.innerWidth * 100;
+        console.log(percentLeft);
+        content.style.gridAutoColumns = percentLeft + "% 0.15rem auto";*/
+        startDrag(e);
+    });
+}
+
+function disableSelect(event) {
+    event.preventDefault();
+}
+
+function startDrag(event) {
+    console.log("drag start");
+    window.addEventListener('mouseup', onDragEnd);
+    window.addEventListener('selectstart', disableSelect);
+    window.addEventListener('mousemove', moveSeparator);
+    
+}
+
+function onDragEnd() {
+    console.log("drag end");
+    window.removeEventListener('mouseup', onDragEnd);
+    window.removeEventListener('selectstart', disableSelect);
+    window.removeEventListener('mousemove', moveSeparator);
+    map.resize();
+}
+
+function moveSeparator(e) {
+    let percentLeft = e.clientX / e.view.innerWidth * 100;
+    console.log(e.clientX);
+    let content = document.getElementById("content-wrapper");
+    content.style.gridAutoColumns = percentLeft + "% 0.15rem auto";
+}
 
 function list_gpx_files() {
     invoke('list_gpx_files')
@@ -119,15 +158,16 @@ function clear_table_selection() {
 
 function toggle_row_selection(ulid) {
     if (selected_rows.includes(ulid)) {
-        console.log("includes");
         var rows = table_body.querySelectorAll("tr");
         rows.forEach(row => {
             if (row.querySelectorAll("td")[0].innerHTML == ulid) {
                 row.classList.remove("selected-row");
             }
         });
-        
-        delete selected_rows.ulid;
+        // remove from ulid array
+        selected_rows = selected_rows.filter(function(e) { 
+            return e != ulid; 
+        });
     } else {
         var rows = table_body.querySelectorAll("tr");
         rows.forEach(row => {
@@ -136,7 +176,6 @@ function toggle_row_selection(ulid) {
             }
         });
         selected_rows.push(ulid);
-        console.log(selected_rows);
     }
 }
 
