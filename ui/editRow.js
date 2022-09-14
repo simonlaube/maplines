@@ -1,6 +1,12 @@
 
 let nameDefault = "";
 let activityDefault = "";
+let variousActivities = "# various activity types #";
+let variousNames = "# various names #";
+let variousActivitiesOption = document.createElement('option');
+variousActivitiesOption.value = "# various activity types #";
+variousActivitiesOption.innerHTML = "# various activity types #";
+
 function editRow() {
     let overlay = document.getElementById("table-overlay");
     let button = document.getElementById("table-button-edit");
@@ -14,6 +20,35 @@ function editRow() {
         let warning = document.getElementById("multiple-rows-warning");
         if (selected_rows.length > 1) {
             warning.style.display = "";
+
+            // check for every editable attribute if it is the same across all selected entries
+            let singleActivity = true;
+            let singleName = true;
+            let lastActivity = row_objects[selected_rows[0]]._type;
+            let lastName = row_objects[selected_rows[0]].name;
+            for (let u of selected_rows) {
+                if (row_objects[u]._type !== lastActivity) {
+                    singleActivity = false;
+                }
+                if (row_objects[u].name !== lastName) {
+                    singleName = false;
+                }
+            }
+            if (singleActivity) {
+                if (document.getElementById("activity-input").contains(variousActivitiesOption)) {
+                    document.getElementById("activity-input").removeChild(variousActivitiesOption);
+                }
+                activityDefault = row_objects[selected_rows[0]]._type;
+            } else {
+                document.getElementById("activity-input").appendChild(variousActivitiesOption);
+                activityDefault = variousActivities;
+            }
+            if (singleName) {
+                nameDefault = row_objects[selected_rows[0]].name;
+            } else {
+                nameDefault = variousNames;
+            }
+
         } else {
             warning.style.display = "none";
             activityDefault = row_objects[selected_rows[0]]._type;
@@ -41,25 +76,36 @@ function cancelEditRow() {
 }
 
 function saveEditRow() {
-    // check for special characters
+    let activity = document.getElementById("activity-input").value;
+    let name = document.getElementById("name-input").value;
+    if (activity === activityDefault && name === nameDefault) {
+        console.log("nothing to change");
+        cancelEditRow();
+        return;
+    }
     if (selected_rows.length > 1) {
         // TODO
+        for (let u of selected_rows) {
+            let activityUpdate = activity;
+            if (activity === activityDefault) {
+                activityUpdate = row_objects[u]._type;
+            }
+            let nameUpdate = name;
+            if (name === nameDefault) {
+                nameUpdate = row_objects[u].name;
+            }
+            invoke("save_track_changes", { ulid: u, name: nameUpdate, activity: activityUpdate })
+        }
+        reload_table();
+        cancelEditRow();
     } else if (selected_rows.length == 1) {
         // check for every entry if input is valid
-        let activity = document.getElementById("activity-input").value;
-        let name = document.getElementById("name-input").value;
-        if (activity === activityDefault && name === nameDefault) {
-            console.log("nothing to change");
-            cancelEditRow();
-            return;
-        }
         invoke("save_track_changes", { ulid: selected_rows[0], name: name, activity: activity })
         .then(() => {
             reload_table();
             var rows = table_body.querySelectorAll("tr");
             rows.forEach(row => {
                 if (row.querySelectorAll("td")[0].innerHTML == selected_rows[0]) {
-                    console.log("ulid found");
                     cancelEditRow();
                     return;
                 }
@@ -85,6 +131,11 @@ function focusInput(field) {
     } else if (field === 'name') {
         inputfield = document.getElementById("name-input");
         inputfield.style.color = "#000";
+        if (selected_rows.length > 1) {
+            if (inputfield.value === variousNames) {
+                inputfield.value = "";
+            }
+        }
     }
 }
 
