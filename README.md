@@ -1,5 +1,5 @@
 # Maplines
-Small tool to analyze and visualize GPS data from recorded sport activities.
+Tool to analyze and visualize GPS data from recorded sport activities.
 
 ## Future Features
 - [x] add gpx to geojson conversion

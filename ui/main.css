@@ -152,6 +152,7 @@ body {
     grid-column: 2 3;
     grid-row: 1 2;
     background-color: #555;
+    opacity: 0.0;
     cursor: ew-resize;
     overflow: visible;
     position: relative;

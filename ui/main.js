@@ -41,7 +41,8 @@ function startDrag(event) {
     window.addEventListener('mouseup', onDragEnd);
     window.addEventListener('selectstart', disableSelect);
     window.addEventListener('mousemove', moveSeparator);
-    
+    document.getElementById('content-wrapper').style.cursor = "ew-resize";
+    document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "ew-resize";
 }
 
 function onDragEnd() {
@@ -49,6 +50,8 @@ function onDragEnd() {
     window.removeEventListener('mouseup', onDragEnd);
     window.removeEventListener('selectstart', disableSelect);
     window.removeEventListener('mousemove', moveSeparator);
+    document.getElementById('content-wrapper').style.cursor = "";
+    document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "";
     map.resize();
 }
 
@@ -57,6 +60,11 @@ function moveSeparator(e) {
     console.log(e.clientX);
     let content = document.getElementById("content-wrapper");
     content.style.gridAutoColumns = percentLeft + "% 0.15rem auto";
+    map.resize();
+}
+
+function setCursorStyle() {
+    document.getElementById("content-wrapper").style.cursor = "wait";
 }
 
 function list_gpx_files() {
