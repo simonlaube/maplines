@@ -53,3 +53,4 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 
 ## Issues
 - [ ] When connected to internet but reception is very low, maps can't display gps lines
+- [ ] When changes to a row are saved, the updated row is not visually selected anymore

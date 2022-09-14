@@ -41,7 +41,6 @@ function cancelEditRow() {
 }
 
 function saveEditRow() {
-    let alert = document.getElementById("invalid-characters-alert");
     // check for special characters
     if (selected_rows.length > 1) {
         // TODO
@@ -49,9 +48,22 @@ function saveEditRow() {
         // check for every entry if input is valid
         let activity = document.getElementById("activity-input").value;
         let name = document.getElementById("name-input").value;
+        if (activity === activityDefault && name === nameDefault) {
+            console.log("nothing to change");
+            cancelEditRow();
+            return;
+        }
         invoke("save_track_changes", { ulid: selected_rows[0], name: name, activity: activity })
         .then(() => {
             reload_table();
+            var rows = table_body.querySelectorAll("tr");
+            rows.forEach(row => {
+                if (row.querySelectorAll("td")[0].innerHTML == selected_rows[0]) {
+                    console.log("ulid found");
+                    cancelEditRow();
+                    return;
+                }
+            });
             cancelEditRow();
         });
     }
@@ -77,13 +89,15 @@ function focusInput(field) {
 }
 
 function checkInput(field) {
+    console.log("check input");
     let inputField;
     let button = document.getElementById('save-row-edit');
     if (field === 'activity') {
         inputField = document.getElementById("activity-input");
-        if (inputField.value === "" || inputField.value === activityDefault) {
-            inputField.value = activityDefault;
+        if (inputField.value === activityDefault) {
             inputField.style.color = "";
+        } else {
+            inputField.style.color = "#000";
         }
     } else if (field === 'name') {
         inputField = document.getElementById("name-input");

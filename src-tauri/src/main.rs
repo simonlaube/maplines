@@ -193,6 +193,7 @@ fn load_track_display_data(ulid: String) -> Option<(Vec<Pause>, GeoJson)> {
 
 #[tauri::command]
 fn save_track_changes(ulid: String, name: String, activity: String) {
+  println!("{}", activity);
   let mut track_analysis = io::read_track_analysis(&ulid).unwrap();
   track_analysis.name = Some(name.clone());
   track_analysis._type = track_analysis::activity_type_from_string(&activity);

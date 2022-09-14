@@ -230,3 +230,35 @@ tbody tr:hover td {
     grid-auto-flow: column;
     grid-auto-columns: 30% 70%;
 }
+#activity-form {
+    display: block;
+}
+#activity-input {
+    width: 100%;
+    height: 100%;
+    vertical-align: middle;
+}
+
+select {
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    -ms-appearance:none;
+    appearance:none;
+    outline:0;
+    box-shadow:none;
+    border:0!important;
+    flex: 1;
+    padding: 0 .5em;
+    cursor:pointer;
+    font-family: 'PT-Root-UI';
+    color: #888;
+ }
+ select::-ms-expand {
+    display: none;
+ }
+ .select {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    line-height: 3;
+ }

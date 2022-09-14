@@ -109,7 +109,6 @@ function clear_table_selection() {
         for (var row of rows) {
             console.log(row.querySelectorAll("td")[0].innerHTML);
             if (row.querySelectorAll("td")[0].innerHTML == ulid) {
-                console.log("remove class");
                 row.classList.remove("selected-row");
                 break;
             }
