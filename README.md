@@ -47,10 +47,11 @@ Small tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] row selection color
 - [ ] import / analysis loading bar
 
-## Changes to Consider (No immediate priority)
+## Changes to Consider (No immediate priority and potentially not useful)
 - [ ] use cbor instead of json / geojson / gpx
 - [ ] reduce number of gps points per line
 
 ## Issues
 - [ ] When connected to internet but reception is very low, maps can't display gps lines
 - [ ] When changes to a row are saved, the updated row is not visually selected anymore
+- [ ] Table overlay scrolls with table

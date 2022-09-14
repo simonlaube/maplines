@@ -236,7 +236,7 @@ tbody tr:hover * {
 
 tbody .selected-row:hover * {
     /*background-color: #d22;*/
-    background-color: rgb(173, 85, 207);
+    background-color: rgb(160, 103, 181);
 }
 
 tbody tr:hover td {
@@ -262,6 +262,8 @@ tbody tr:hover td {
     width: inherit;
     height: inherit;
     position: absolute;
+    top: 0;
+    left: 0;
     z-index: 5;
 }
 #row-edit {
