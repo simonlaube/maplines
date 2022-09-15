@@ -108,7 +108,7 @@ function saveEditRow() {
             rows.forEach(row => {
                 if (row.querySelectorAll("td")[0].innerHTML == ulid) {
                     clear_table_selection();
-                    toggle_row_selection(ulid);
+                    toggleRowSelection(ulid);
                     cancelEditRow();
                     return;
                 }

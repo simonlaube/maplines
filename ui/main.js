@@ -113,30 +113,11 @@ function add_to_table(entry, sort) {
         if (!event.shiftKey) {
             clear_table_selection();
         }
-        toggle_row_selection(entry.ulid);
+        toggleRowSelection(entry);
         document.getSelection().removeAllRanges();
 
         //invoke('load_geojson', { ulid: entry.ulid })
         //invoke('calculate_pauses', { ulid: entry.ulid })
-        invoke('load_track_display_data', { ulid: entry.ulid })
-        .then(async (response) => {
-            var geometries = response[1].geometry.geometries;
-            var move = geometries[0];
-            var pause = geometries[1];
-            var uned_pause = geometries[2];
-            var line = map.getSource('gps-line');
-            line.setData(move);
-            var up = map.getSource('uned-pause-line');
-            up.setData(uned_pause);
-            var p = map.getSource('pause-line');
-            p.setData(pause);
-            var bbox = [[entry.x_min[0], entry.y_min[1]], [entry.x_max[0], entry.y_max[1]]];
-            map.fitBounds(bbox, {
-                padding: { top: 25, bottom: 25, left: 25, right: 25 }
-            });
-            add_pause_icons(response[0]);
-        });
-        add_track_icons(entry);
         /*
         invoke('load_pauses', { ulid: entry.ulid })
         .then((response) => {
@@ -152,11 +133,11 @@ function add_to_table(entry, sort) {
 function clear_table_selection() {
     for (var ulid of selected_rows) {
         var rows = table_body.rows;
-        console.log(ulid);
         for (var row of rows) {
             console.log(row.querySelectorAll("td")[0].innerHTML);
             if (row.querySelectorAll("td")[0].innerHTML == ulid) {
-                row.classList.remove("selected-row");
+                // row.classList.remove("selected-row");
+                toggleRowSelection(row_objects[ulid]);
                 break;
             }
         }
@@ -164,26 +145,54 @@ function clear_table_selection() {
     selected_rows = [];
 }
 
-function toggle_row_selection(ulid) {
-    if (selected_rows.includes(ulid)) {
+var b; // bounding box
+function toggleRowSelection(entry) {
+    if (selected_rows.includes(entry.ulid)) {
         var rows = table_body.querySelectorAll("tr");
         rows.forEach(row => {
-            if (row.querySelectorAll("td")[0].innerHTML == ulid) {
+            if (row.querySelectorAll("td")[0].innerHTML == entry.ulid) {
                 row.classList.remove("selected-row");
             }
         });
+        removeMove(entry);
+        removePause(entry);
+        removePauseUned(entry);
+        removeTrackIcons(entry);
         // remove from ulid array
         selected_rows = selected_rows.filter(function(e) { 
-            return e != ulid; 
+            return e != entry.ulid; 
         });
     } else {
+        
         var rows = table_body.querySelectorAll("tr");
         rows.forEach(row => {
-            if (row.querySelectorAll("td")[0].innerHTML == ulid) {
+            if (row.querySelectorAll("td")[0].innerHTML == entry.ulid) {
                 row.classList.add("selected-row");
             }
         });
-        selected_rows.push(ulid);
+        selected_rows.push(entry.ulid);
+
+        invoke('load_track_display_data', { ulid: entry.ulid })
+        .then(async (response) => {
+            var geometries = response[1].geometry.geometries;
+            var move = geometries[0];
+            var pause = geometries[1];
+            var unedPause = geometries[2];
+            addMove(entry, move);
+            addPause(entry, pause);
+            addUnedPause(entry, unedPause);
+            var nb = [[entry.x_min[0], entry.y_min[1]], [entry.x_max[0], entry.y_max[1]]]; // bounding box of new line
+            if (selected_rows.length == 1) {
+                b = nb;
+            } else if (selected_rows.length > 1) {
+                b = [[Math.min(nb[0][0], b[0][0]), Math.min(nb[0][1], b[0][1])], [Math.max(nb[1][0], b[1][0]), Math.max(nb[1][1], b[1][1])]];
+            }
+            map.fitBounds(b, {
+                padding: { top: 25, bottom: 25, left: 25, right: 25 }
+            });
+            addPauseIcons(entry, response[0]);
+        });
+        addTrackIcons(entry);
     }
 }
 

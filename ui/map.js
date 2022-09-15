@@ -13,87 +13,114 @@ function init_map() {
     map.touchZoomRotate.disableRotation();
     map.addControl(new maplibregl.NavigationControl());
     map.on('load', function () {
-        map.addSource('gps-line', {
-            'type': 'geojson',
-            'data': {
-                'type': 'Feature',
-                'properties': {},
-                'geometry': {
-                    'type': 'LineString',
-                    'coordinates': []
-                }
-            }
-        });
-        map.addLayer({
-            'id': 'gps-line',
-            'type': 'line',
-            'source': 'gps-line',
-            'layout': {
-                'line-join': 'round',
-                'line-cap': 'round'
-            },
-            'paint': {
-                'line-color': '#9f2dcf',
-                'line-width': 3
-            }
-        });
-        map.addSource('uned-pause-line', {
-            'type': 'geojson',
-            'data': {
-                'type': 'Feature',
-                'properties': {},
-                'geometry': {
-                    'type': 'LineString',
-                    'coordinates': []
-                }
-            }
-        });
-        map.addLayer({
-            'id': 'uned-pause-line',
-            'type': 'line',
-            'source': 'uned-pause-line',
-            'layout': {
-                'line-join': 'round',
-                'line-cap': 'round'
-            },
-            'paint': {
-                'line-color': '#9f2dcf',
-                'line-width': 3,
-                'line-opacity': 0.2
-            }
-        });
-        map.addSource('pause-line', {
-            'type': 'geojson',
-            'data': {
-                'type': 'Feature',
-                'properties': {},
-                'geometry': {
-                    'type': 'LineString',
-                    'coordinates': []
-                }
-            }
-        });
-        map.addLayer({
-            'id': 'pause-line',
-            'type': 'line',
-            'source': 'pause-line',
-            'layout': {
-                'line-join': 'round',
-                'line-cap': 'round'
-            },
-            'paint': {
-                'line-color': '#f80',
-                'line-width': 3,
-                'line-dasharray': [2, 2]
-            }
-        });
     });
 }
 
-function add_track_icons(entry) {
-    document.querySelectorAll(".track-icon").forEach(icon => {
-        icon.remove();
-    })
+function addMove(entry, geom) {
+    map.addSource(entry.ulid + ' gps-line', {
+        'type': 'geojson',
+        'data': {
+            'type': 'Feature',
+            'properties': {},
+            'geometry': {
+                'type': 'LineString',
+                'coordinates': []
+            }
+        }
+    });
+    map.addLayer({
+        'id': entry.ulid + ' gps-line',
+        'type': 'line',
+        'source': entry.ulid + ' gps-line',
+        'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        'paint': {
+            'line-color': '#9f2dcf',
+            'line-width': 3
+        }
+    });
+    var line = map.getSource(entry.ulid + " gps-line");
+    line.setData(geom);
+}
+
+function addPause(entry, geom) {
+    map.addSource(entry.ulid + ' pause-line', {
+        'type': 'geojson',
+        'data': {
+            'type': 'Feature',
+            'properties': {},
+            'geometry': {
+                'type': 'LineString',
+                'coordinates': []
+            }
+        }
+    });
+    map.addLayer({
+        'id': entry.ulid + ' pause-line',
+        'type': 'line',
+        'source': entry.ulid + ' pause-line',
+        'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        'paint': {
+            'line-color': '#f80',
+            'line-width': 3,
+            'line-dasharray': [2, 2]
+        }
+    });
+    var line = map.getSource(entry.ulid + " pause-line");
+    line.setData(geom);
+}
+
+function addUnedPause(entry, geom) {
+    map.addSource(entry.ulid + ' uned-pause-line', {
+        'type': 'geojson',
+        'data': {
+            'type': 'Feature',
+            'properties': {},
+            'geometry': {
+                'type': 'LineString',
+                'coordinates': []
+            }
+        }
+    });
+    map.addLayer({
+        'id': entry.ulid + ' uned-pause-line',
+        'type': 'line',
+        'source': entry.ulid + ' uned-pause-line',
+        'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        'paint': {
+            'line-color': '#9f2dcf',
+            'line-width': 3,
+            'line-opacity': 0.2
+        }
+    });
+    var line = map.getSource(entry.ulid + " uned-pause-line");
+    line.setData(geom);
+}
+
+function removeMove(entry) {
+    map.removeLayer(entry.ulid + ' gps-line');
+    map.removeSource(entry.ulid + ' gps-line');
+}
+
+function removePause(entry) {
+    map.removeLayer(entry.ulid + ' pause-line');
+    map.removeSource(entry.ulid + ' pause-line');
+}
+
+function removePauseUned(entry) {
+    map.removeLayer(entry.ulid + ' uned-pause-line');
+    map.removeSource(entry.ulid + ' uned-pause-line');
+}
+
+function addTrackIcons(entry) {
     var icons = {
         'type': 'FeatureCollection',
         'features': [
@@ -126,13 +153,14 @@ function add_track_icons(entry) {
     icons.features.forEach(function (marker) {
         // create a DOM element for the marker
         var el = document.createElement('div');
-        el.className = 'track-icon';
+        el.className = 'track-icon' + entry.ulid;
+        el.classList.add('track-icon');
         el.style.backgroundImage = marker.properties.img;
         el.style.width = marker.properties.iconSize[0] + 'px';
         el.style.height = marker.properties.iconSize[1] + 'px';
             
         el.addEventListener('click', function () {
-        window.alert(marker.properties.message);
+            window.alert(marker.properties.message);
         });
             
         // add marker to map
@@ -142,13 +170,14 @@ function add_track_icons(entry) {
     });
 }
 
-function add_pause_icons(pauses) {
-    document.querySelectorAll(".pause-icon").forEach(icon => {
+function addPauseIcons(entry, pauses) {
+    /*document.querySelectorAll(".pause-icon").forEach(icon => {
         icon.remove();
-    })
+    })*/
     pauses.forEach(p => {
         var el = document.createElement('div');
-        el.className = 'track-icon';
+        el.className = 'track-icon' + entry.ulid;
+        el.classList.add('track-icon');
 
         var size = 15;
         if (p.duration_sec < 600) { // Pause was shorter than 10 minutes
@@ -172,4 +201,10 @@ function add_pause_icons(pauses) {
         .setLngLat([p.coord_before[0] + (p.coord_after[0] - p.coord_before[0]) / 2, p.coord_before[1] + (p.coord_after[1] - p.coord_before[1]) / 2])
         .addTo(map);
     });
+}
+
+function removeTrackIcons(entry) {
+    document.querySelectorAll(".track-icon" + entry.ulid).forEach(icon => {
+        icon.remove();
+    })
 }
