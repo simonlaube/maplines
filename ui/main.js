@@ -197,7 +197,7 @@ function toggleRowSelection(entry) {
             map.fitBounds(b, {
                 padding: { top: 25, bottom: 25, left: 25, right: 25 }
             });
-            addPauseIcons(entry, response[0]);
+            // addPauseIcons(entry, response[0]);
         });
         addTrackIcons(entry);
     }

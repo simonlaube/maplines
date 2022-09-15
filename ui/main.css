@@ -221,14 +221,34 @@ th, td {
     padding: 0.2rem;
     white-space: nowrap;
 }
+/*
+tr {
+    border-left-width: 8px;
+    border-left-style: inset;
+    border-left-color:rgba(255, 255, 255, 0);
+}*/
 /*table td + td { border-left: 1px solid #ddd; }
 table th + th { border-left: 1px solid #ddd; }*/
 tr:nth-child(odd) { background-color: #fff; }
 tr:nth-child(even) { background-color: #f2f2f2; }
 /*.selected-row:nth-child(odd) { background-color: #f55; }
 .selected-row:nth-child(even) { background-color: #f33; }*/
-.selected-row:nth-child(odd) { background-color: rgb(194, 146, 213); }
-.selected-row:nth-child(even) { background-color: rgb(170, 117, 190); }
+
+/*.selected-row:nth-child(odd) { background-color: rgb(194, 146, 213); }
+.selected-row:nth-child(even) { background-color: rgb(170, 117, 190); }*/
+.selected-row { 
+    /*border-left-color: #9f2dcf;*/
+    border-left-color: #b450e0;
+    border-left-width: 8px;
+    border-left-style: solid;
+}
+
+.selected-row td {
+    font-family: 'PT-Root-UI';
+    font-weight: bold;
+    letter-spacing: -1px;
+    background-color: #dfdfdf;
+}
 
 tbody tr:hover * {
     background-color: #e2e2e2;
@@ -236,8 +256,8 @@ tbody tr:hover * {
 }
 
 tbody .selected-row:hover * {
-    /*background-color: #d22;*/
-    background-color: rgb(160, 103, 181);
+    /*background-color: #d22;
+    background-color: rgb(160, 103, 181);*/
 }
 
 tbody tr:hover td {
