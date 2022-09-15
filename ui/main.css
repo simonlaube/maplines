@@ -272,6 +272,7 @@ tbody tr:hover td {
     height: 450px;
     background-color: #fff;
     padding: 1rem;
+    display: none;
 }
 .horizontal-wrapper {
     display: grid;

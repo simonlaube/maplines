@@ -8,15 +8,12 @@ variousActivitiesOption.value = "# various activity types #";
 variousActivitiesOption.innerHTML = "# various activity types #";
 
 function editRow() {
-    let overlay = document.getElementById("table-overlay");
-    let button = document.getElementById("table-button-edit");
     let nameField = document.getElementById("name-input");
     document.getElementById("invalid-characters-alert").style.display = "";
     nameField.style.color = ""; // reset color if changed with last focus
     nameField.style.borderColor = ""
     let activityField = document.getElementById("activity-input");
     activityField.style.color = ""; // reset color if changed with last focus
-    if (overlay.style.display !== "flex") {
         let warning = document.getElementById("multiple-rows-warning");
         if (selected_rows.length > 1) {
             warning.style.display = "";
@@ -56,23 +53,11 @@ function editRow() {
         }
         activityField.value = activityDefault;
         nameField.value = nameDefault;
-        overlay.style.display = "flex";
-        button.style.opacity = "0.6";
-        button.style.pointerEvents = "none";
-    } else {
-        console.log("!Should not be able to click edit button while flex window open");
-        overlay.style.display = "none";
-    }
+        setEditRowOverlay();
 }
 
 function cancelEditRow() {
-    let overlay = document.getElementById("table-overlay");
-    let button = document.getElementById("table-button-edit");
-    if (overlay.style.display !== "none") {
-        overlay.style.display = "none";
-        button.style.opacity = "1.0";
-        button.style.pointerEvents = "";
-    }
+    setNoOverlay();
 }
 
 function saveEditRow() {
@@ -84,7 +69,6 @@ function saveEditRow() {
         return;
     }
     if (selected_rows.length > 1) {
-        // TODO
         for (let u of selected_rows) {
             let activityUpdate = activity;
             if (activity === activityDefault) {

@@ -8,6 +8,13 @@ var table_body;
 var row_objects;
 var selected_rows;
 
+const OverlayState = {
+    None: 'None',
+    RowEdit: 'RowEdit',
+    Settings: 'Settings',
+};
+var currentOverlayState = OverlayState.None;
+
 window.onload = init;
 
 function init() {
@@ -214,5 +221,81 @@ function comparatorDate(a, b) {
     let a_date = new Date(a.value.start_time);
     let b_date = new Date(b.value.start_time);
     return (a_date < b_date) - (a_date > b_date);
+}
+
+function setNoOverlay() {
+    if (currentOverlayState !== OverlayState.None) {
+        currentOverlayState = OverlayState.None;
+        deactivateRowEdit();
+        // TODO: deactivate all other possible overlay menus
+        deactivateOverlay();
+        activateMenuBar();
+    }
+}
+
+function setEditRowOverlay() {
+    if (currentOverlayState === OverlayState.None) {
+        currentOverlayState = OverlayState.RowEdit;
+        deactivateMenuBar();
+        activateOverlay();
+        activateRowEdit();
+    }
+}
+
+function activateOverlay() {
+    let overlay = document.getElementById("table-overlay");
+    overlay.style.display = "flex";
+}
+
+function deactivateOverlay() {
+    let overlay = document.getElementById("table-overlay");
+    overlay.style.display = "none";
+}
+
+function deactivateMenuBar() {
+    let bRowEdit = document.getElementById("table-button-edit");
+    bRowEdit.style.opacity = "0.6";
+    bRowEdit.style.pointerEvents = "none";
+
+    let bTableOnly = document.getElementById("table-only");
+    bTableOnly.style.opacity = "0.6";
+    bTableOnly.style.pointerEvents = "none";
+
+    let bTableMap = document.getElementById("table-map");
+    bTableMap.style.opacity = "0.6";
+    bTableMap.style.pointerEvents = "none";
+
+
+    let bMapOnly = document.getElementById("map-only");
+    bMapOnly.style.opacity = "0.6";
+    bMapOnly.style.pointerEvents = "none";
+}
+
+function activateMenuBar() {
+    let bRowEdit = document.getElementById("table-button-edit");
+    bRowEdit.style.opacity = "";
+    bRowEdit.style.pointerEvents = "";
+
+    let bTableOnly = document.getElementById("table-only");
+    bTableOnly.style.opacity = "";
+    bTableOnly.style.pointerEvents = "";
+
+    let bTableMap = document.getElementById("table-map");
+    bTableMap.style.opacity = "";
+    bTableMap.style.pointerEvents = "";
+
+    let bMapOnly = document.getElementById("map-only");
+    bMapOnly.style.opacity = "";
+    bMapOnly.style.pointerEvents = "";
+}
+
+function activateRowEdit() {
+    let rowEdit = document.getElementById('row-edit');
+    rowEdit.style.display = "block";
+}
+
+function deactivateRowEdit() {
+    let rowEdit = document.getElementById('row-edit');
+    rowEdit.style.display = "";
 }
 
