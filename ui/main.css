@@ -121,10 +121,10 @@ body {
 
 #content-wrapper {
     display: grid;
-    grid-auto-columns: auto 0.15rem auto;
+    grid-auto-columns: 60% 0.15rem auto;
+    grid-auto-rows: 70% 0.15rem auto;
     grid-column: 1 2;
     grid-row: 2 3;
-
 }
 
 #gpx-table-wrapper {
@@ -148,17 +148,44 @@ body {
     width: 100%;
 }
 
-#content-separator {
-    grid-column: 2 3;
-    grid-row: 1 2;
-    background-color: #fff;
+#hor-content-separator {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 2;
+    grid-row-end: 3;
+    background-color: #aaa;
+    opacity: 1.0;
+    cursor: ns-resize;
+    overflow: visible;
+    position: relative;
+}
+#hor-separator-hitbox {
+    width: 100%;
+    height: 500%;
+    justify-content:center;
+    align-items: center;
+    background-color: red;
+    z-index: 3;
+    display: block;
+    position: absolute;
+    top: -200%;
+    opacity: 0.0;
+    left: 0;
+}
+
+#ver-content-separator {
+    grid-column-start: 2;
+    grid-column-end: 3;
+    grid-row-start: 1;
+    grid-row-end: 4;
+    background-color: #aaa;
     opacity: 1.0;
     cursor: ew-resize;
     overflow: visible;
     position: relative;
 }
 
-#separator-hitbox {
+#ver-separator-hitbox {
     width: 500%;
     height: 100%;
     justify-content:center;
@@ -176,7 +203,7 @@ body {
     grid-column-start: 3;
     grid-column-end: 4;
     grid-row-start: 1;
-    grid-row-end: 2;
+    grid-row-end: 4;
     z-index: 2;
 }
 
@@ -217,6 +244,10 @@ th {
     top: 0px;
 }
 
+tr {
+    color: #111;
+}
+
 th, td {
     padding: 0.2rem;
     white-space: nowrap;
@@ -238,16 +269,18 @@ tr:nth-child(even) { background-color: #f2f2f2; }
 .selected-row:nth-child(even) { background-color: rgb(170, 117, 190); }*/
 .selected-row { 
     /*border-left-color: #9f2dcf;*/
-    border-left-color: #b450e0;
+    border-left-color: #9f2dcf;
     border-left-width: 8px;
     border-left-style: solid;
+    /*color: #5e2677;*/
+    color: #6f328b;
 }
 
 .selected-row td {
     font-family: 'PT-Root-UI';
     font-weight: bold;
     letter-spacing: -1px;
-    background-color: #dfdfdf;
+    /*background-color: #dfdfdf;*/
 }
 
 tbody tr:hover * {
@@ -275,13 +308,13 @@ tbody tr:hover td {
     cursor: pointer;
 }
 
-#table-overlay {
+#overlay {
     background-color: rgba(0,0,0,0.5);;
     display: none;
     justify-content:center;
     align-items: center;
-    width: inherit;
-    height: inherit;
+    width: 100%;
+    height: 100%;
     position: absolute;
     top: 0;
     left: 0;

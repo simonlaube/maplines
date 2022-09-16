@@ -81,7 +81,7 @@ function saveEditRow() {
             invoke("save_track_changes", { ulid: u, name: nameUpdate, activity: activityUpdate })
         }
         reload_table();
-        cancelEditRow();
+        setNoOverlay();
     } else if (selected_rows.length == 1) {
         // check for every entry if input is valid
         let ulid = selected_rows[0];
@@ -93,12 +93,13 @@ function saveEditRow() {
                 if (row.querySelectorAll("td")[0].innerHTML == ulid) {
                     clear_table_selection();
                     toggleRowSelection(ulid);
-                    cancelEditRow();
+                    setNoOverlay();
                     return;
                 }
             });
-            cancelEditRow();
+            
         });
+        setNoOverlay();
     }
 }
 

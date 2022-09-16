@@ -11,7 +11,7 @@ Tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] add detailed analysis of tracks (profile & speed calculation, mountain category detection, rounds)
 - [x] add activity types
 - [x] refactor importing gps files (import by copying and analyzing original files from within program)
-- [ ] display multiple gps lines (select in table)
+- [x] display multiple gps lines (select in table)
 - [ ] group gps lines
 - [x] add start, stop and pause labels on map
 - [ ] add deleting & archiving of tracks

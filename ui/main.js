@@ -8,6 +8,13 @@ var table_body;
 var row_objects;
 var selected_rows;
 
+const DisplayState = {
+    Table: 'Table',
+    Analysis: 'Analysis',
+    Map: 'Map',
+}
+var currentDisplayState = DisplayState.Analysis;
+
 const OverlayState = {
     None: 'None',
     RowEdit: 'RowEdit',
@@ -22,6 +29,10 @@ function init() {
     reload_table();
     init_map();
     selected_rows = [];
+
+    let bTableMap = document.getElementById("table-map");
+    bTableMap.style.opacity = "0.6";
+    bTableMap.style.pointerEvents = "none";
 }
 
 listen("track_import", ev => {
@@ -29,13 +40,19 @@ listen("track_import", ev => {
 });
 
 function initContentResize() {
-    let separator = document.getElementById("content-separator");
-    separator.addEventListener("mousedown", (e) => {
+    let vSeparator = document.getElementById("ver-content-separator");
+    vSeparator.addEventListener("mousedown", (e) => {
         /*e.preventDefault();
         let percentLeft = e.clientX / e.view.innerWidth * 100;
         console.log(percentLeft);
         content.style.gridAutoColumns = percentLeft + "% 0.15rem auto";*/
-        startDrag(e);
+        startVDrag(e);
+    });
+
+    let hSeparator = document.getElementById("hor-content-separator");
+    hSeparator.addEventListener("mousedown", (e) => {
+            startHDrag(e);
+            // document.getElementById('')
     });
 }
 
@@ -43,26 +60,54 @@ function disableSelect(event) {
     event.preventDefault();
 }
 
-function startDrag(event) {
+function startHDrag(event) {
     console.log("drag start");
-    window.addEventListener('mouseup', onDragEnd);
+    document.getElementById('content-wrapper').style.cursor = "ns-resize";
+    document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "ns-resize";
+    window.addEventListener('mouseup', onHDragEnd);
     window.addEventListener('selectstart', disableSelect);
-    window.addEventListener('mousemove', moveSeparator);
-    document.getElementById('content-wrapper').style.cursor = "ew-resize";
-    document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "ew-resize";
+    window.addEventListener('mousemove', moveHSeparator);
+    
 }
 
-function onDragEnd() {
+function onHDragEnd() {
     console.log("drag end");
-    window.removeEventListener('mouseup', onDragEnd);
+    window.removeEventListener('mouseup', onHDragEnd);
     window.removeEventListener('selectstart', disableSelect);
-    window.removeEventListener('mousemove', moveSeparator);
+    window.removeEventListener('mousemove', moveHSeparator);
     document.getElementById('content-wrapper').style.cursor = "";
     document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "";
     map.resize();
 }
 
-function moveSeparator(e) {
+function moveHSeparator(e) {
+    let percentTop = e.clientY / e.view.innerHeight * 100;
+    let content = document.getElementById("content-wrapper");
+    content.style.gridAutoRows = percentTop + "% 0.15rem auto";
+    map.resize();
+}
+
+function startVDrag(event) {
+    console.log("drag start");
+    document.getElementById('content-wrapper').style.cursor = "ew-resize";
+    document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "ew-resize";
+    window.addEventListener('mouseup', onVDragEnd);
+    window.addEventListener('selectstart', disableSelect);
+    window.addEventListener('mousemove', moveVSeparator);
+    
+}
+
+function onVDragEnd() {
+    console.log("drag end");
+    window.removeEventListener('mouseup', onVDragEnd);
+    window.removeEventListener('selectstart', disableSelect);
+    window.removeEventListener('mousemove', moveVSeparator);
+    document.getElementById('content-wrapper').style.cursor = "";
+    document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "";
+    map.resize();
+}
+
+function moveVSeparator(e) {
     let percentLeft = e.clientX / e.view.innerWidth * 100;
     console.log(e.clientX);
     let content = document.getElementById("content-wrapper");
@@ -80,8 +125,6 @@ function list_gpx_files() {
 }
 
 function reload_table() {
-    // const table_body = document.getElementById("gpxTableBody");
-    // const row_objects = {};
     table_body = document.getElementById("gpxTableBody");
     row_objects = {};
     invoke('load_track_analysis')
@@ -122,14 +165,6 @@ function add_to_table(entry, sort) {
         }
         toggleRowSelection(entry);
         document.getSelection().removeAllRanges();
-
-        //invoke('load_geojson', { ulid: entry.ulid })
-        //invoke('calculate_pauses', { ulid: entry.ulid })
-        /*
-        invoke('load_pauses', { ulid: entry.ulid })
-        .then((response) => {
-            add_pause_icons(response);
-        })*/
         
     });
     if (sort) {
@@ -197,7 +232,7 @@ function toggleRowSelection(entry) {
             map.fitBounds(b, {
                 padding: { top: 25, bottom: 25, left: 25, right: 25 }
             });
-            // addPauseIcons(entry, response[0]);
+            addPauseIcons(entry, response[0]);
         });
         addTrackIcons(entry);
     }
@@ -229,26 +264,26 @@ function setNoOverlay() {
         deactivateRowEdit();
         // TODO: deactivate all other possible overlay menus
         deactivateOverlay();
-        activateMenuBar();
+        // activateMenuBar();
     }
 }
 
 function setEditRowOverlay() {
     if (currentOverlayState === OverlayState.None) {
         currentOverlayState = OverlayState.RowEdit;
-        deactivateMenuBar();
+        // deactivateMenuBar();
         activateOverlay();
         activateRowEdit();
     }
 }
 
 function activateOverlay() {
-    let overlay = document.getElementById("table-overlay");
+    let overlay = document.getElementById("overlay");
     overlay.style.display = "flex";
 }
 
 function deactivateOverlay() {
-    let overlay = document.getElementById("table-overlay");
+    let overlay = document.getElementById("overlay");
     overlay.style.display = "none";
 }
 
@@ -297,5 +332,35 @@ function activateRowEdit() {
 function deactivateRowEdit() {
     let rowEdit = document.getElementById('row-edit');
     rowEdit.style.display = "";
+}
+
+function setDisplayState(state) {
+    if (state !== currentDisplayState) {
+        let bTableOnly = document.getElementById("table-only");
+        bTableOnly.style.opacity = "";
+        bTableOnly.style.pointerEvents = "";
+
+        let bTableMap = document.getElementById("table-map");
+        bTableMap.style.opacity = "";
+        bTableMap.style.pointerEvents = "";
+
+        let bMapOnly = document.getElementById("map-only");
+        bMapOnly.style.opacity = "";
+        bMapOnly.style.pointerEvents = "";
+
+        if (state === DisplayState.Table) {
+            bTableOnly.style.opacity = "0.6";
+            bTableOnly.style.pointerEvents = "none";
+            currentDisplayState = DisplayState.Table;
+        } else if (state === DisplayState.Analysis) {
+            bTableMap.style.opacity = "0.6";
+            bTableMap.style.pointerEvents = "none";
+            currentDisplayState = DisplayState.Analysis;
+        } else if (state === DisplayState.Map) {
+            bMapOnly.style.opacity = "0.6";
+            bMapOnly.style.pointerEvents = "none";
+            currentDisplayState = DisplayState.Map;
+        }
+    }
 }
 
