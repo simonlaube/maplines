@@ -2,7 +2,6 @@
 const invoke = window.__TAURI__.invoke;
 const { emit, listen } = window.__TAURI__.event;
 
-
 var map;
 var table_body;
 var row_objects;
@@ -63,6 +62,7 @@ function disableSelect(event) {
 function startHDrag(event) {
     console.log("drag start");
     document.getElementById('content-wrapper').style.cursor = "ns-resize";
+    document.getElementById('content-wrapper').style.pointerEvents = "none";
     document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "ns-resize";
     window.addEventListener('mouseup', onHDragEnd);
     window.addEventListener('selectstart', disableSelect);
@@ -76,6 +76,7 @@ function onHDragEnd() {
     window.removeEventListener('selectstart', disableSelect);
     window.removeEventListener('mousemove', moveHSeparator);
     document.getElementById('content-wrapper').style.cursor = "";
+    document.getElementById('content-wrapper').style.pointerEvents = "";
     document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "";
     map.resize();
 }
