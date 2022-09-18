@@ -196,7 +196,6 @@ fn load_track_display_data(ulid: String) -> Option<(Vec<Pause>, GeoJson)> {
   // TODO: if geojson or pauses do not exist -> create them
   let geojson = io::read_geojson(&ulid).unwrap();
   let track_analysis = io::read_track_analysis(&ulid).unwrap();
-  elevation::from_latlong(io::read_gpx(&ulid).unwrap());
   Some((track_analysis.pauses, geojson))
 }
 

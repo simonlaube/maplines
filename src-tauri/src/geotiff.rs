@@ -416,8 +416,8 @@ impl TIFFReader {
             .ok_or(Error::new(ErrorKind::InvalidData, "Image depth not found."))?;
 
         // Storage location within the TIFF. First, lets get the number of rows per strip.
-        let rows_per_strip = ifd.entries.iter().find(|&e| e.tag == TIFFTag::RowsPerStripTag)
-            .ok_or(Error::new(ErrorKind::InvalidData, "Rows per strip not found."))?;
+        /* let rows_per_strip = ifd.entries.iter().find(|&e| e.tag == TIFFTag::RowsPerStripTag)
+            .ok_or(Error::new(ErrorKind::InvalidData, "Rows per strip not found."))?;*/
         // For each strip, its offset within the TIFF file.
         let strip_offsets = ifd.entries.iter().find(|&e| e.tag == TIFFTag::StripOffsetsTag)
             .ok_or(Error::new(ErrorKind::InvalidData, "Strip offsets not found."))?;
@@ -450,10 +450,11 @@ impl TIFFReader {
         println!("here 3");
 
         // Read strip after strip, and copy it into the output Vec.
+        /*
         let rows_per_strip = match rows_per_strip.value[0] {
             TagValue::ShortValue(v) => v,
             _ => 0 as u16,
-        };
+        };*/
         let mut offsets: Vec<u32> = Vec::with_capacity(strip_offsets.value.len());
         for v in &strip_offsets.value {
             match v {
