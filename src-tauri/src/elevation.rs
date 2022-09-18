@@ -1,10 +1,15 @@
+use std::fs::File;
 use std::{collections::HashMap, hash::Hash, ops::Add};
 
+use geo::HaversineDistance;
 use gpx::Gpx;
 use serde::{Deserialize, Serialize};
-use geotiff::TIFF;
+// use geotiff::TIFF;
+// use geotiff_rs::GeoTiff;
+// use geotiff::TIFF;
 
 use crate::errors;
+use crate::geotiff::TIFFStream;
 use crate::paths;
 
 const SRTM_FILE_NAME: &str = "srtm_%lon_%lat.tif";
@@ -32,11 +37,22 @@ struct OpenElevationResult {
     results: Vec<LocationElevation>,
 }
 
-pub fn from_latlong(gpx: Gpx) -> Result<(), errors::MaplineError> {
+pub fn from_latlong(gpx: Gpx) -> Result<(Vec<(f64, i32)>), errors::MaplineError> {
     // map with key = (lon, lat), value = Tile with upper left coord (lon, lat)
-    let mut tiles: HashMap<(u8, u8), TIFF> = HashMap::new();
+    let mut tiles: HashMap<(u8, u8), TIFFStream> = HashMap::new();
     let mut temp_lat: i8 = 0;
     let mut temp_lon: i16 = 0;
+    // let mut elevations: Vec<i32> = vec![];
+    // let mut distances: Vec<f64> = vec![];
+    let mut result: Vec<(f64, i32)> = vec![];
+    let mut current_distance = 0.;
+
+    let mut last_point = &gpx.tracks[0].segments[0].points[0].clone();
+    let mut last_ele: Option<f64> = None;
+    let mut counter = 0;
+
+    let mut up: f64 = 0.;
+    let mut down: f64 = 0.;
     for w in &gpx.tracks[0].segments[0].points {
         // 0.00042 corresponds to half a pixel of the elevation map
         // TODO: check if this is correct (at edges of the map, on tiles with lat < 0)
@@ -56,7 +72,6 @@ pub fn from_latlong(gpx: Gpx) -> Result<(), errors::MaplineError> {
         let tile_lon: i16 = ((temp_lon + 36) % 72) + 1;
         assert!(tile_lon >= 1, "tile longitude must be greater than 1");
         // println!("lat: {}, lon: {}", tile_lat, tile_lon);
-
         if !tiles.contains_key(&(tile_lon as u8, tile_lat as u8)) {
             load_tile(tile_lon as u8, tile_lat as u8, &mut tiles);
         }
@@ -66,15 +81,37 @@ pub fn from_latlong(gpx: Gpx) -> Result<(), errors::MaplineError> {
 
         // println!("lon: {}, lat: {}", rel_lon, rel_lat);
         // println!("{}", tiles.get(&(tile_lon as u8, tile_lat as u8)).unwrap().get_value_at(rel_lat as usize, rel_lon as usize));
+        current_distance += last_point.point().haversine_distance(&w.point());
+        last_point = w;
 
+        // only check every nth point
+        if counter % 100 == 0 {
+
+            let ele = tiles.get(&(tile_lon as u8, tile_lat as u8)).unwrap().get_value_at(rel_lat as usize, rel_lon as usize) as i32;
+            match last_ele {
+                Some(e) => {
+                    if ele as f64 - e > 0. {
+                        up += ele as f64 - e;
+                    } else {
+                        down += e - ele as f64;
+                    }
+                }
+                None => (),
+            }
+            last_ele = Some(ele as f64);
+            result.push((current_distance, ele));
+        }
+        counter += 1;
     }
+    println!("up: {}, down: {}", up, down);
+    Ok(result)
 
-    Err(errors::MaplineError::CouldNotLoadElevation)
+    // Err(errors::MaplineError::CouldNotLoadElevation)
 }
 
 /// Gets the tile from the srtm directory. If tile not present, tries to load
 /// tile from online source.
-fn load_tile(lon: u8, lat: u8, tiles: &mut HashMap<(u8, u8), TIFF>) {
+fn load_tile(lon: u8, lat: u8, tiles: &mut HashMap<(u8, u8), TIFFStream>) {
 
     let mut lon_str: String = String::from("");
     if lon < 10 { lon_str = String::from("0"); } // add 0 in front of one digit number
@@ -89,12 +126,23 @@ fn load_tile(lon: u8, lat: u8, tiles: &mut HashMap<(u8, u8), TIFF>) {
     let mut path = paths::srtm();
     path.push(file_name.replace("%lon", lon_str.as_str()).replace("%lat", lat_str.as_str()));
     println!("path: {:?}", path.to_str());
-    let tiff = geotiff_rs::GeoTiff::from_file(path.clone());
-    println!("tiff loaded");
+    /*let tiff = geotiff_rs::GeoTiff::from_file(path.clone());
+    match tiff {
+        Ok(t) => { tiles.insert((lon, lat), t); },
+        Err(e) => (),
+    }*/
+    /*
     match TIFF::open(path.to_str().unwrap()) {
         Ok(tiff) => { tiles.insert((lon, lat), *tiff); },
         Err(e) => println!("{}", e), // TODO: load map from internet
+    }*/
+
+    match TIFFStream::open(path.to_str().unwrap()) {
+        Ok(t) => { tiles.insert((lon, lat), t); },
+        Err(e) => println!("{:?}", e),
     }
+
+    println!("tiff loaded");
     // println!("file_name: {}", file_name.replace("%lon", lon_str.as_str()).replace("%lat", lat_str.as_str()));
 
 }

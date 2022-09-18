@@ -9,12 +9,19 @@ extern crate geo;
 extern crate gpx;
 extern crate geojson;
 extern crate time;
-extern crate geotiff;
+// extern crate geotiff;
 extern crate reqwest;
 extern crate tokio;
 
+// used by geotiff
+extern crate byteorder;
+#[macro_use]
+extern crate enum_primitive;
+extern crate num;
+
 mod import;
 mod io;
+mod geotiff;
 mod track_analysis;
 mod line;
 mod paths;
@@ -126,7 +133,7 @@ fn main() {
       }
       _ => {}
     })
-    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses, load_track_display_data, save_track_changes])
+    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses, load_track_display_data, save_track_changes, load_elevation])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
   paths::create_dirs_if_not_exist();
@@ -186,9 +193,17 @@ fn calculate_pauses(ulid: String) -> Option<(Vec<Pause>, GeoJson)> {
 
 #[tauri::command]
 fn load_track_display_data(ulid: String) -> Option<(Vec<Pause>, GeoJson)> {
+  // TODO: if geojson or pauses do not exist -> create them
   let geojson = io::read_geojson(&ulid).unwrap();
   let track_analysis = io::read_track_analysis(&ulid).unwrap();
+  elevation::from_latlong(io::read_gpx(&ulid).unwrap());
   Some((track_analysis.pauses, geojson))
+}
+
+#[tauri::command]
+fn load_elevation(ulid: String) -> Option<Vec<(f64, i32)>> {
+  let gpx = io::read_gpx(&ulid).unwrap();
+  Some(elevation::from_latlong(gpx).unwrap())
 }
 
 #[tauri::command]

@@ -235,6 +235,12 @@ function toggleRowSelection(entry) {
             });
             addPauseIcons(entry, response[0]);
         });
+
+        invoke('load_elevation', { ulid: entry.ulid })
+        .then(async (response) => {
+            console.log(response);
+            updateChart(response);
+        });
         addTrackIcons(entry);
     }
 }
