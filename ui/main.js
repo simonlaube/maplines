@@ -238,9 +238,15 @@ function toggleRowSelection(entry) {
 
         invoke('load_elevation', { ulid: entry.ulid })
         .then(async (response) => {
-            console.log(response);
-            updateChart(response);
+            if (response == null) {
+                // ERROR HANDLING
+            } else {
+                console.log(response);
+                updateChart(response[0]);
+                addData(response[1]);
+            }
         });
+
         addTrackIcons(entry);
     }
 }

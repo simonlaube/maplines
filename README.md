@@ -58,7 +58,7 @@ Tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] When connected to internet but reception is very low, maps can't display gps lines
 - [ ] Map does not appear when reconnected to internet
 - [ ] When changes to a row are saved, the updated row is not visually selected anymore
-- [ ] Table overlay scrolls with table
+- [ ] very scattered elevation data still leads to inaccurate calculations
 
 ## Sources
 Geotiff: https://srtm.csi.cgiar.org/wp-content/uploads/files/srtm_5x5/TIFF/

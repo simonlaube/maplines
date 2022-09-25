@@ -10,13 +10,38 @@ var data = {
         tension: 0.1
     }],
 };
-var myChart = new Chart(ctx, {
+var graphChart = new Chart(ctx, {
     type: 'scatter',
     data: data,
     options: {
         responsive:true,
         maintainAspectRatio: false,
-        showLine: true
+        showLine: true,
+        plugins: {
+            zoom: {
+                zoom: {
+                    wheel: {
+                        enabled: true,
+                        modifierKey: 'shift',
+                    },
+                    pinch: {
+                        enabled: true,
+                    },
+                    mode: 'x',
+                },
+                pan: {
+                    enabled: true,
+                    mode: 'xy',
+                }
+            }
+        },
+        elements: {
+            point: {
+                borderWidth: 0,
+                radius: 0,
+                backgroundColor: 'rgba(0,0,0,0)'
+            }
+        }
     }
 });
 
@@ -36,8 +61,8 @@ function updateChart(data) {
             tension: 0.1
         }],
     };
-    myChart.data = data;
-    myChart.update();
+    graphChart.data = data;
+    graphChart.update();
 
     /*
     removeData(myChart);
@@ -45,12 +70,20 @@ function updateChart(data) {
     addData(myChart, range(0, yData.length - 1), yData);*/
 }
 
-function addData(chart, label, data) {
-    chart.data.labels.push(label);
+function addData(data) {
+    // graphChart.data.labels.push(label);
+    graphChart.data.datasets.push({
+        label: 'Smoothed',
+        data: data,
+        fill: true,
+        borderColor: '#9f2dcf',
+        tension: 0.1
+    })
+    /*
     chart.data.datasets.forEach((dataset) => {
         dataset.data.push(data);
-    });
-    chart.update();
+    });*/
+    graphChart.update();
 }
 
 function removeData(chart) {

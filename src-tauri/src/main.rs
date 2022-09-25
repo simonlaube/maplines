@@ -18,6 +18,7 @@ extern crate byteorder;
 #[macro_use]
 extern crate enum_primitive;
 extern crate num;
+extern crate zip;
 
 mod import;
 mod io;
@@ -200,9 +201,15 @@ fn load_track_display_data(ulid: String) -> Option<(Vec<Pause>, GeoJson)> {
 }
 
 #[tauri::command]
-fn load_elevation(ulid: String) -> Option<Vec<(f64, i32)>> {
+fn load_elevation(ulid: String) -> Option<(Vec<(f64, i32)>, Vec<(f64, i32)>)> {
   let gpx = io::read_gpx(&ulid).unwrap();
-  Some(elevation::from_latlong(gpx).unwrap())
+  match elevation::from_latlong(gpx) {
+    Ok(r) => Some(r),
+    Err(e) => {
+      println!("{:?}", e);
+      None
+    }
+  }
 }
 
 #[tauri::command]

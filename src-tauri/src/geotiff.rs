@@ -125,8 +125,8 @@ impl TIFFStream {
     /// Opens a `.tiff` file at the location indicated by `filename`.
     pub fn open(filename: &str) -> Result<TIFFStream> {
         let tiff_reader = TIFFReader;
-        let mut stream = tiff_reader.load(filename).unwrap();
-        Ok(stream)
+        let stream = tiff_reader.load(filename);
+        stream
     }
 
     /// Gets the value at a given coordinate (in pixels).
@@ -438,16 +438,13 @@ impl TIFFReader {
             _ => 0 as u16,
         };
         // TODO The img Vec should optimally not be of usize, but of size "image_depth".
-        println!("here 1");
         // let mut img: Vec<Vec<Vec<usize>>> = Vec::with_capacity(image_length as usize);
-        println!("here 2");
         /*for i in 0..image_length {
             &img.push(Vec::with_capacity(image_width as usize));
             for j in 0..image_width {
                 &img[i as usize].push(vec![0; 1]); // TODO To be changed to take into account SamplesPerPixel!
             }
         }*/
-        println!("here 3");
 
         // Read strip after strip, and copy it into the output Vec.
         /*
@@ -462,7 +459,6 @@ impl TIFFReader {
                 _ => (),
             };
         }
-        println!("here 4");
         let mut byte_counts: Vec<u32> = Vec::with_capacity(strip_byte_counts.value.len());
         for v in &strip_byte_counts.value {
             match v {
@@ -470,7 +466,6 @@ impl TIFFReader {
                 _ => (),
             };
         }
-        println!("here 5");
 
         Ok((offsets, byte_counts, image_depth))
         // A bit much boilerplate, but should be okay and fast.
