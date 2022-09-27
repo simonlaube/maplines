@@ -137,7 +137,6 @@ fn main() {
     .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses, load_track_display_data, save_track_changes, load_elevation])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
-  paths::create_dirs_if_not_exist();
 
 }
 
