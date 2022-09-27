@@ -1,4 +1,3 @@
-use geojson::{GeoJson};
 use geo_types::Point;
 use gpx::{Gpx, TrackSegment, Track, read, Waypoint};
 use gpx::Time;
@@ -9,11 +8,10 @@ use fitparser::{profile};
 
 use std::path::PathBuf;
 use std::fs::File;
-use std::io::{self, Write, BufReader, BufWriter};
+use std::io::BufReader;
 
 use crate::line::arrange_display;
 use crate::track_analysis::{TrackAnalysis, Activity};
-use crate::paths;
 use crate::errors::MaplineError;
 use crate::util;
 use crate::io::{write_geojson, write_gpx, write_track_analysis};
@@ -21,7 +19,7 @@ use crate::io::{write_geojson, write_gpx, write_track_analysis};
 pub fn gpx(gpx_path: &PathBuf) -> Result<TrackAnalysis, MaplineError> {
     let file = File::open(gpx_path).unwrap();
     let reader = BufReader::new(file);
-    let mut gpx = read(reader).unwrap(); // TODO: remove unwrap
+    let gpx = read(reader).unwrap(); // TODO: remove unwrap
     let geojson = arrange_display(&gpx, None, None);
     
     // TODO: implement
@@ -149,6 +147,6 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, MaplineError> {
     Ok(track_analysis)
 }
 
-fn optimize_gpx(gpx: &Gpx) {
+fn optimize_gpx(_gpx: &Gpx) {
     // todo!("reduce number of track points");
 }

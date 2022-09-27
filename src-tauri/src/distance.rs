@@ -1,8 +1,7 @@
-use geojson::GeoJson;
 use gpx::{Gpx, Waypoint};
-use geo::{Point, HaversineDistance};
+use geo::{HaversineDistance};
 
-use crate::{track_analysis::{TrackAnalysis, self}, io, pause::Pause};
+use crate::pause::Pause;
 /*
 pub fn from_track_analysis(track_analysis: &TrackAnalysis) -> Result<f64, String> {
     let gpx = io::read_gpx(&track_analysis.ulid);

@@ -1,6 +1,5 @@
-use std::fs::File;
 use std::path::PathBuf;
-use std::{collections::HashMap, hash::Hash, ops::Add};
+use std::{collections::HashMap, ops::Add};
 
 use geo::HaversineDistance;
 use gpx::Gpx;
@@ -45,8 +44,8 @@ struct OpenElevationResult {
 pub fn from_latlong(gpx: Gpx) -> Result<(Vec<(f64, i32)>, Vec<(f64, i32)>), errors::MaplineError> {
     // map with key = (lon, lat), value = Tile with upper left coord (lon, lat)
     let mut tiles: HashMap<(u8, u8), TIFFStream> = HashMap::new();
-    let mut temp_lat: i8 = 0;
-    let mut temp_lon: i16 = 0;
+    let mut temp_lat: i8;
+    let mut temp_lon: i16;
     // let mut elevations: Vec<i32> = vec![];
     // let mut distances: Vec<f64> = vec![];
     let mut result: Vec<(f64, i32)> = vec![];
@@ -182,20 +181,13 @@ fn load_tile(lon: u8, lat: u8, tiles: &mut HashMap<(u8, u8), TIFFStream>) -> Res
             tiles.insert((lon, lat), t);
             println!("tile {} {} is opened", lon, lat);
         },
-        Err(e) => return Err(MaplineError::CouldNotLoadElevation),
+        Err(_e) => return Err(MaplineError::CouldNotLoadElevation),
     }
 
     println!("tiff loaded");
     Ok(())
     // println!("file_name: {}", file_name.replace("%lon", lon_str.as_str()).replace("%lat", lat_str.as_str()));
 
-}
-
-/// Gets the elevation from tif tiles currently in memory. If coordinates lie
-/// outside the tile, the corresponding tile gets added to the tile vector in memory
-fn get_elevation(lat: u8, lon: u8/*, tiles: Vec< >*/) -> Result<(), errors::MaplineError> {
-
-    Ok(())
 }
 
 /*
@@ -246,6 +238,7 @@ pub async fn from_latlong(gpx: Gpx) -> Result<(), Box<dyn std::error::Error>> {
 }
 */
 
+/*
 async fn request_elevation_batch_500(input: &OpenElevationInput) -> Result<OpenElevationResult, reqwest::Error> {
     let client = reqwest::Client::new();
     let resp = client.post("https://api.open-elevation.com/api/v1/lookup")
@@ -262,4 +255,4 @@ async fn request_elevation_batch_500(input: &OpenElevationInput) -> Result<OpenE
     .await?;
 
     resp.json::<OpenElevationResult>().await
-}
+}*/

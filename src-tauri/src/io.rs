@@ -1,5 +1,5 @@
-use std::{path::PathBuf, fs::{self, File}, time::Duration};
-use std::io::{self, Write, BufReader, BufWriter};
+use std::{path::PathBuf, fs::{self, File}};
+use std::io::{self, BufReader, BufWriter};
 use std::io::Cursor;
 
 use geojson::GeoJson;
@@ -23,11 +23,11 @@ pub fn read_geojson(ulid: &String) -> Option<GeoJson> {
 }
 
 pub fn read_gpx(ulid: &String) -> Option<Gpx> {
-    let mut path = paths::track_gpx(ulid);
+    let path = paths::track_gpx(ulid);
 
     let file = File::open(path).unwrap();
     let reader = BufReader::new(file);
-    let mut gpx = read(reader); // TODO: remove unwrap
+    let gpx = read(reader); // TODO: remove unwrap
     match gpx {
         Ok(g) => Some(g),
         _ => None
@@ -35,19 +35,19 @@ pub fn read_gpx(ulid: &String) -> Option<Gpx> {
 }
 
 pub fn read_track_analysis(ulid: &String) -> Option<TrackAnalysis> {
-    let mut path = paths::track_analysis(ulid);
+    let path = paths::track_analysis(ulid);
     Some(TrackAnalysis::read(&path).unwrap())
 }
 
 
 pub fn write_track_analysis(ta: &TrackAnalysis) -> Result<(), io::Error> {
-    let mut path = paths::track_analysis(&ta.ulid);
+    let path = paths::track_analysis(&ta.ulid);
     write_file(path, serde_json::to_string(ta)?)?;
     Ok(())
 }
 
 pub fn write_gpx(gpx: &Gpx, ulid: &str) -> Result<(), io::Error> {
-    let mut path = paths::track_gpx(ulid);
+    let path = paths::track_gpx(ulid);
     let file = File::create(path)?;
     let writer = BufWriter::new(file);
     gpx::write(gpx, writer).unwrap();
@@ -55,7 +55,7 @@ pub fn write_gpx(gpx: &Gpx, ulid: &str) -> Result<(), io::Error> {
 }
 
 pub fn write_geojson(geojson: &GeoJson, ulid: &str) -> Result<(), io::Error> {
-    let mut path = paths::track_geojson(ulid);
+    let path = paths::track_geojson(ulid);
     write_file(path, geojson.to_string())?;
     Ok(())
 }
@@ -87,7 +87,7 @@ pub async fn download_tiff_zip(addr: &String, zip_path: PathBuf, out_path: PathB
 
     let mut content = Cursor::new(response.bytes().await.unwrap());
     match std::io::copy(&mut content, &mut zip_file) {
-        Ok(o) => (),
+        Ok(_o) => (),
         Err(e) => panic!("{:?}", e),
     }
     
@@ -104,7 +104,7 @@ pub async fn download_tiff_zip(addr: &String, zip_path: PathBuf, out_path: PathB
                 Ok(file) => file,
             };
             match std::io::copy(&mut file, &mut out_file) {
-                Ok(o) => (),
+                Ok(_o) => (),
                 Err(e) => panic!("{:?}", e),
             }
         }

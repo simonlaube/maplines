@@ -1,10 +1,8 @@
-use std::collections::HashSet;
 use std::io::{Result, Error, ErrorKind, Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 use std::fs::File;
 
 use byteorder::{ReadBytesExt, ByteOrder, BigEndian, LittleEndian};
-use std::collections::{HashMap};
 use enum_primitive::FromPrimitive;
 
 // use tiff::{TIFF, IFD, IFDEntry, decode_tag, decode_tag_type};
@@ -49,6 +47,7 @@ pub struct IFDEntry {
 }
 
 /// Implementations for the IFD struct.
+/*
 impl IFD {
     pub fn get_image_length() -> usize {
         3
@@ -62,6 +61,7 @@ impl IFD {
         3
     }
 }
+*/
 
 /// Decodes an u16 value into a TIFFTag.
 pub fn decode_tag(value: u16) -> Option<TIFFTag> {
@@ -75,6 +75,7 @@ pub fn decode_tag_type(tpe: u16) -> Option<TagType> {
 
 /// Validation functions to make sure all the required tags are existing for a certain GeoTiff
 /// image type (e.g., grayscale or RGB image).
+/*
 pub fn validate_required_tags_for(typ: &ImageType) -> Option<HashSet<TIFFTag>> {
     let required_grayscale_tags: HashSet<TIFFTag> = [
         TIFFTag::ImageWidthTag,
@@ -112,6 +113,7 @@ pub fn validate_required_tags_for(typ: &ImageType) -> Option<HashSet<TIFFTag>> {
         ImageType::YCbCr => None,
     }
 }
+*/
 
 pub struct TIFFStream {
     pub ifds: Vec<IFD>,
@@ -313,12 +315,13 @@ impl TIFFReader {
             &TagType::FloatTag => TagValue::FloatValue(Endian::read_f32(&vec[..])),
             &TagType::DoubleTag => TagValue::DoubleValue(Endian::read_f64(&vec[..])),
             &TagType::UndefinedTag => TagValue::ByteValue(0),
-            _ => panic!("Tag not found!"),
+            // _ => panic!("Tag not found!"),
         }
     }
 
     /// Converts a number of u8 values to a usize value. This doesn't check if usize is at least
     /// u64, so be careful with large values.
+    /*
     fn vec_to_value<Endian: ByteOrder>(&self, vec: Vec<u8>) -> usize {
         let len = vec.len();
         match len {
@@ -330,6 +333,7 @@ impl TIFFReader {
             _ => panic!("Vector has wrong number of elements!"),
         }
     }
+    */
 
     /// Reads a single tag (given an IFD offset) into an IFDEntry.
     ///
@@ -405,13 +409,13 @@ impl TIFFReader {
     ///
     /// As for now, the following assumptions are made:
     /// * No compression is used, i.e., CompressionTag == 1.
-    fn read_image_data<Endian: ByteOrder>(&self, reader: &mut dyn SeekableReader,
+    fn read_image_data<Endian: ByteOrder>(&self, _reader: &mut dyn SeekableReader,
                                           ifd: &IFD) -> Result<(Vec<u32>, Vec<u32>, u16)> {
         // Image size and depth.
-        let image_length = ifd.entries.iter().find(|&e| e.tag == TIFFTag::ImageLengthTag)
-            .ok_or(Error::new(ErrorKind::InvalidData, "Image length not found."))?;
-        let image_width = ifd.entries.iter().find(|&e| e.tag == TIFFTag::ImageWidthTag)
-            .ok_or(Error::new(ErrorKind::InvalidData, "Image width not found."))?;
+        // let image_length = ifd.entries.iter().find(|&e| e.tag == TIFFTag::ImageLengthTag)
+            // .ok_or(Error::new(ErrorKind::InvalidData, "Image length not found."))?;
+        // let image_width = ifd.entries.iter().find(|&e| e.tag == TIFFTag::ImageWidthTag)
+            // .ok_or(Error::new(ErrorKind::InvalidData, "Image width not found."))?;
         let image_depth = ifd.entries.iter().find(|&e| e.tag == TIFFTag::BitsPerSampleTag)
             .ok_or(Error::new(ErrorKind::InvalidData, "Image depth not found."))?;
 
@@ -425,6 +429,7 @@ impl TIFFReader {
             .ok_or(Error::new(ErrorKind::InvalidData, "Strip byte counts not found."))?;
 
         // Create the output Vec.
+        /*
         let image_length = match image_length.value[0] {
             TagValue::ShortValue(v) => v,
             _ => 0 as u16,
@@ -433,6 +438,7 @@ impl TIFFReader {
             TagValue::ShortValue(v) => v,
             _ => 0 as u16,
         };
+        */
         let image_depth = match image_depth.value[0] {
             TagValue::ShortValue(v) => v / 8,
             _ => 0 as u16,
@@ -621,7 +627,7 @@ pub fn tag_size(t: &TagType) -> u32 {
         TagType::SignedRationalTag => 8,
         TagType::FloatTag          => 4,
         TagType::DoubleTag         => 8,
-        _                          => 0,
+        // _                          => 0,
     }
 }
 
@@ -641,6 +647,7 @@ pub enum TagValue {
     DoubleValue(DOUBLE),
 }
 
+/*
 /// The photometric interpretation of the GeoTIFF.
 #[repr(u16)]
 #[derive(Debug)]
@@ -703,7 +710,7 @@ pub enum ImageOrientation {
     RightBottom = 7,	// row 0 rhs, col 0 bottom
     LeftBottom  = 8,	// row 0 lhs, col 0 bottom
 }
-
+*/
 
 // Baseline Tags
 enum_from_primitive! {
@@ -799,5 +806,5 @@ enum_from_primitive! {
 }
 
 // Default Values
-static PHOTOMETRIC_INTERPRETATION_SHORT_DEFAULT: SHORT = 1;
-static PHOTOMETRIC_INTERPRETATION_LONG_DEFAULT: LONG = 1;
+// static PHOTOMETRIC_INTERPRETATION_SHORT_DEFAULT: SHORT = 1;
+// static PHOTOMETRIC_INTERPRETATION_LONG_DEFAULT: LONG = 1;

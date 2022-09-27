@@ -24,7 +24,7 @@ impl Settings {
         path.push("settings");
         path.set_extension("json");
         if !path.exists() {
-            let mut settings = Settings::new();
+            let settings = Settings::new();
             settings.write();
             return Ok(settings)
         }

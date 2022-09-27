@@ -4,9 +4,8 @@ use serde::{Serialize, Deserialize};
 use ulid;
 use gpx::{Time, Track, Gpx};
 use std::path::PathBuf;
-use std::fs::{self, File};
+use std::fs;
 
-use crate::paths;
 use crate::distance;
 use crate::pause::{self, Pause};
 /// same as Track but without links and segments
@@ -58,7 +57,7 @@ impl TrackAnalysis {
             None => activity_type_from_track(&track),
             Some(a) => a,
         };
-        let pauses: Vec<Pause> = pause::find(&geojson, gpx);
+        let pauses: Vec<Pause> = pause::find(gpx);
         let distance = distance::calculate(gpx, &pauses);
 
         TrackAnalysis {

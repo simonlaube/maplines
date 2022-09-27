@@ -1,11 +1,8 @@
 
 use geo::{Point, HaversineDistance};
-use geojson::GeoJson;
-use gpx::{Gpx, Time, Waypoint};
+use gpx::{Gpx, Waypoint};
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
-
-use crate::{track_analysis::TrackAnalysis, io};
 
 /// Scattered points within this radius can be declared as clusters -> Pauses
 const SCATTER_RADIUS: f64 = 40.0;
@@ -38,13 +35,14 @@ pub fn find(track_analysis: TrackAnalysis) -> Option<Vec<Pause>> {
 }
 */
 
-pub fn find(geojson: &GeoJson, gpx: &Gpx) -> Vec<Pause> {
-    return find_clusters(gpx, geojson)
+pub fn find(gpx: &Gpx) -> Vec<Pause> {
+    return find_clusters(gpx)
 }
 
 // TODO: Error handling
 // TODO: check that distance is "short"
 /// Finds consecutive points having long time-gap and short distance
+/*
 fn find_time_jumps(gpx: &Gpx, min_break_time: u64) -> Result<Option<Vec<Pause>>, String> {
     let mut prev_time: Option<Time> = None;
     let mut prev_point: Option<&Waypoint> = None;
@@ -67,9 +65,10 @@ fn find_time_jumps(gpx: &Gpx, min_break_time: u64) -> Result<Option<Vec<Pause>>,
     }
     Ok(Some(result))
 }
+*/
 
 /// Find consecutive gps points building 'clusters' within a constrained area
-fn find_clusters(gpx: &Gpx, geojson: &GeoJson) -> Vec<Pause> {
+fn find_clusters(gpx: &Gpx) -> Vec<Pause> {
     let mut result: Vec<Pause> = vec![];
     let mut detection_completed = false;
     let mut pos = 0;
@@ -83,7 +82,7 @@ fn find_clusters(gpx: &Gpx, geojson: &GeoJson) -> Vec<Pause> {
         let start_point = gpx.tracks[0].segments[0].points[pos].point();
         let start_time = OffsetDateTime::from(gpx.tracks[0].segments[0].points[pos].time.unwrap()).unix_timestamp();
         let mut current_cluster: Vec<&Waypoint> = vec![];
-        for (i, q) in gpx.tracks[0].segments[0].points[pos..].iter().enumerate() {
+        for q in gpx.tracks[0].segments[0].points[pos..].iter() {
             if start_point.haversine_distance(&q.point().into()) < SCATTER_RADIUS || current_cluster.len() < 2 {
                 current_cluster.push(q);
             } else {

@@ -34,14 +34,12 @@ mod elevation;
 mod distance;
 
 use std::ffi::OsStr;
-use std::fs;
 use std::path::PathBuf;
-use errors::MaplineError;
 use geojson::GeoJson;
 use pause::Pause;
 use track_analysis::TrackAnalysis;
 use settings::Settings;
-use tauri::api::{dialog, dir};
+use tauri::api::{dialog};
 use tauri::{CustomMenuItem, Menu, Submenu};
 
 const ANALYSIS_VERSION: i32 = 1;
@@ -57,7 +55,7 @@ fn main() {
   let import_fit = CustomMenuItem::new("fit".to_string(), "Import FIT Files...");
   let import_path = CustomMenuItem::new("path".to_string(), "Add Import Path...");
   let import_direct = CustomMenuItem::new("direct".to_string(), "Import From Paths");
-  let mut open_menu = Submenu::new("Open", Menu::new().add_item(import_gpx).add_item(import_fit).add_item(import_path).add_item(import_direct));
+  let open_menu = Submenu::new("Open", Menu::new().add_item(import_gpx).add_item(import_fit).add_item(import_path).add_item(import_direct));
 
   tauri::Builder::default()
     .menu(Menu::new().add_submenu(main_menu).add_submenu(open_menu))
@@ -73,7 +71,7 @@ fn main() {
             Some(vec_fp) => {
               for fp in vec_fp {
                 let track_analysis = match import::gpx(&fp) {
-                  Err(e) => { println!("File with same start time is already present."); return; },
+                  Err(_e) => { println!("File with same start time is already present."); return; },
                   Ok(t) => t,
                 };
                 event.window().emit("track_import", track_analysis).unwrap();
@@ -179,12 +177,12 @@ fn load_geojson(ulid: String) -> Option<GeoJson> {
 }
 #[tauri::command]
 fn load_pauses(ulid: String) -> Vec<Pause> {
-  pause::find(&io::read_geojson(&ulid).unwrap(), &io::read_gpx(&ulid).unwrap())
+  pause::find(&io::read_gpx(&ulid).unwrap())
 }
 
 #[tauri::command]
 fn calculate_pauses(ulid: String) -> Option<(Vec<Pause>, GeoJson)> {
-  let gpx = io::read_gpx(&ulid).unwrap();
+  // let gpx = io::read_gpx(&ulid).unwrap();
   // elevation::from_latlong(gpx);
   // elevation::from_latlong(gpx);
   // distance::from_track_analysis(&io::read_track_analysis(&ulid).unwrap());
