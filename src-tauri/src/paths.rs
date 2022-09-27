@@ -7,21 +7,30 @@ pub fn maplines() -> PathBuf {
     data_path
 }
 
-pub fn track_analysis() -> PathBuf {
-    let mut track_analysis = maplines();
-    track_analysis.push("track_analysis");
+pub fn tracks() -> PathBuf {
+    let mut tracks_path = maplines();
+    tracks_path.push("tracks");
+    tracks_path
+}
+
+pub fn track_analysis(ulid: &str) -> PathBuf {
+    let mut track_analysis = tracks();
+    track_analysis.push(ulid);
+    track_analysis.push("analysis.json");
     track_analysis
 }
 
-pub fn gpx() -> PathBuf {
-    let mut gpx_path = maplines();
-    gpx_path.push("gpx");
+pub fn track_gpx(ulid: &str) -> PathBuf {
+    let mut gpx_path = tracks();
+    gpx_path.push(ulid);
+    gpx_path.push("record.gpx");
     gpx_path
 }
 
-pub fn geojson() -> PathBuf {
-    let mut geojson_path = maplines();
-    geojson_path.push("geojson");
+pub fn track_geojson(ulid: &str) -> PathBuf {
+    let mut geojson_path = tracks();
+    geojson_path.push(ulid);
+    geojson_path.push("geometries.geojson");
     geojson_path
 }
 
@@ -33,8 +42,6 @@ pub fn srtm() -> PathBuf {
 }
 
 pub fn create_dirs_if_not_exist() {
-    fs::create_dir_all(track_analysis()).unwrap();
-    fs::create_dir_all(gpx()).unwrap();
-    fs::create_dir_all(geojson()).unwrap();
+    fs::create_dir_all(tracks()).unwrap();
     fs::create_dir_all(srtm()).unwrap();
 }

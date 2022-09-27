@@ -5,14 +5,11 @@ use std::io::Cursor;
 use geojson::GeoJson;
 use gpx::{Gpx, read};
 use tokio;
-use zip::ZipArchive;
 
 use crate::{paths, track_analysis::TrackAnalysis};
 
 pub fn read_geojson(ulid: &String) -> Option<GeoJson> {
-    let mut path = paths::geojson();
-    path.push(ulid);
-    path.set_extension("geojson");
+    let path = paths::track_geojson(ulid);
 
     match fs::read_to_string(path) {
         Ok(s) => {
@@ -26,9 +23,7 @@ pub fn read_geojson(ulid: &String) -> Option<GeoJson> {
 }
 
 pub fn read_gpx(ulid: &String) -> Option<Gpx> {
-    let mut path = paths::gpx();
-    path.push(ulid);
-    path.set_extension("gpx");
+    let mut path = paths::track_gpx(ulid);
 
     let file = File::open(path).unwrap();
     let reader = BufReader::new(file);
@@ -40,25 +35,19 @@ pub fn read_gpx(ulid: &String) -> Option<Gpx> {
 }
 
 pub fn read_track_analysis(ulid: &String) -> Option<TrackAnalysis> {
-    let mut path = paths::track_analysis();
-    path.push(ulid);
-    path.set_extension("json");
+    let mut path = paths::track_analysis(ulid);
     Some(TrackAnalysis::read(&path).unwrap())
 }
 
 
 pub fn write_track_analysis(ta: &TrackAnalysis) -> Result<(), io::Error> {
-    let mut path = paths::track_analysis();
-    path.push(ta.ulid.clone().to_string());
-    path.set_extension("json");
+    let mut path = paths::track_analysis(&ta.ulid);
     write_file(path, serde_json::to_string(ta)?)?;
     Ok(())
 }
 
 pub fn write_gpx(gpx: &Gpx, ulid: &str) -> Result<(), io::Error> {
-    let mut path = paths::gpx();
-    path.push(ulid);
-    path.set_extension("gpx");
+    let mut path = paths::track_gpx(ulid);
     let file = File::create(path)?;
     let writer = BufWriter::new(file);
     gpx::write(gpx, writer).unwrap();
@@ -66,16 +55,21 @@ pub fn write_gpx(gpx: &Gpx, ulid: &str) -> Result<(), io::Error> {
 }
 
 pub fn write_geojson(geojson: &GeoJson, ulid: &str) -> Result<(), io::Error> {
-    let mut path = paths::geojson();
-    path.push(ulid);
-    path.set_extension("geojson");
+    let mut path = paths::track_geojson(ulid);
     write_file(path, geojson.to_string())?;
     Ok(())
 }
 
 fn write_file(path: PathBuf, content: String) -> Result<(), io::Error> {
+    if let Some(p) = path.parent() {
+        fs::create_dir_all(p)?
+    };
+    fs::write(path, content)?;
+/*
     let mut file = File::create(path).unwrap();
     write!(file, "{}", content)?;
+    Ok(())
+    */
     Ok(())
 }
 

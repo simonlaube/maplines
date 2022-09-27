@@ -142,15 +142,20 @@ fn main() {
 
 #[tauri::command]
 fn load_track_analysis() -> Vec<TrackAnalysis> {
-  let paths: Vec<PathBuf> = std::fs::read_dir(paths::track_analysis()).unwrap()
+  let paths: Vec<PathBuf> = std::fs::read_dir(paths::tracks()).unwrap()
   .into_iter()
   .map(|x| x.unwrap().path())
-  .filter(|x| x.file_name().unwrap().to_str().unwrap().ends_with(".json"))
+  // .filter(|x| x.file_name().unwrap().to_str().unwrap().ends_with(".json"))
+  .filter(|x| x.is_dir())
   .collect();
   let mut result: Vec<TrackAnalysis> = vec![];
   for p in paths {
-    match TrackAnalysis::read(&p) {
+    /*match TrackAnalysis::read(&p) {
       Ok(ta) => result.push(ta),
+      _ => println!("Could not load track with path {:?}.", p),
+    }*/
+    match io::read_track_analysis(&p.file_name().unwrap().to_str().unwrap().to_string()) {
+      Some(ta) => result.push(ta),
       _ => println!("Could not load track with path {:?}.", p),
     }
   }
