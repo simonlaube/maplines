@@ -150,7 +150,7 @@ body {
     width: 100%;
 }
 
-#chart-wrapper {
+#graph-wrapper {
     grid-column-start: 1;
     grid-column-end: 2;
     grid-row-start: 3;
@@ -161,9 +161,8 @@ body {
     grid-auto-rows: 1;
 }
 
-#test-chart {
-    width: 100%;
-    height: 100%;
+#elevation-graph {
+    overflow: hidden;
 }
 
 #hor-content-separator {

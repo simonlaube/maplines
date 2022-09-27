@@ -5,6 +5,7 @@ use std::io::Cursor;
 use geojson::GeoJson;
 use gpx::{Gpx, read};
 use tokio;
+use serde_json;
 
 use crate::{paths, track_analysis::TrackAnalysis};
 
@@ -34,11 +35,25 @@ pub fn read_gpx(ulid: &String) -> Option<Gpx> {
     }
 }
 
-pub fn read_track_analysis(ulid: &String) -> Option<TrackAnalysis> {
+pub fn read_track_analysis(ulid: &String) -> Result<TrackAnalysis, io::Error> {
     let path = paths::track_analysis(ulid);
-    Some(TrackAnalysis::read(&path).unwrap())
+    let json_string = fs::read_to_string(path)?;
+    let ta: TrackAnalysis = serde_json::from_str(&json_string.as_str())?;
+    Ok(ta)
 }
 
+pub fn read_elevation(ulid: &str) -> Result<Vec<(f64, i32)>, io::Error> {
+    let path = paths::track_elevation(ulid);
+    let json_string = fs::read_to_string(path)?;
+    let elevation: Vec<(f64, i32)> = serde_json::from_str(&json_string.as_str())?;
+    Ok(elevation)
+}
+
+pub fn write_elevation(elevation: Vec<(f64, i32)>, ulid: &str) -> Result<(), io::Error> {
+    let path = paths::track_elevation(ulid);
+    write_file(path, serde_json::to_string(&elevation)?)?;
+    Ok(())
+}
 
 pub fn write_track_analysis(ta: &TrackAnalysis) -> Result<(), io::Error> {
     let path = paths::track_analysis(&ta.ulid);

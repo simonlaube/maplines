@@ -153,7 +153,7 @@ fn load_track_analysis() -> Vec<TrackAnalysis> {
       _ => println!("Could not load track with path {:?}.", p),
     }*/
     match io::read_track_analysis(&p.file_name().unwrap().to_str().unwrap().to_string()) {
-      Some(ta) => result.push(ta),
+      Ok(ta) => result.push(ta),
       _ => println!("Could not load track with path {:?}.", p),
     }
   }
@@ -204,9 +204,18 @@ fn load_track_display_data(ulid: String) -> Option<(Vec<Pause>, GeoJson)> {
 
 #[tauri::command]
 fn load_elevation(ulid: String) -> Option<(Vec<(f64, i32)>, Vec<(f64, i32)>)> {
+  if paths::track_elevation(&ulid).exists() {
+    println!("elevation already exists");
+    let ele1 = io::read_elevation(&ulid).unwrap();
+    let ele2 = io::read_elevation(&ulid).unwrap();
+    return Some((ele1, ele2))
+  }
   let gpx = io::read_gpx(&ulid).unwrap();
   match elevation::from_latlong(gpx) {
-    Ok(r) => Some(r),
+    Ok(e) => {
+      io::write_elevation(e.1.clone(), &ulid);
+      Some(e)
+    }
     Err(e) => {
       println!("{:?}", e);
       None

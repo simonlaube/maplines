@@ -1,3 +1,13 @@
+var elevationGraph = new Dygraph(
+    document.getElementById('elevation-graph'),
+    "X,Y\n" +
+    "0, 0\n",
+    {
+        showRangeSelector : true,
+    }
+);
+elevationGraph.resize();
+/*
 const ctx = document.getElementById('elevation-chart').getContext("2d");
 var labels = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
 var data = {
@@ -44,14 +54,14 @@ var graphChart = new Chart(ctx, {
         }
     }
 });
-
+*/
 function range(start, end) {
     return Array(end - start + 1).fill().map((_, idx) => start + idx)
 }
 
-function updateChart(data) {
+function updateGraph(data) {
     // var labels = xData /*range(0, yData.length - 1)*/;
-    var data = {
+    /*var data = {
         labels: labels,
         datasets: [{
             label: 'Elevation',
@@ -60,9 +70,13 @@ function updateChart(data) {
             borderColor: 'rgb(75, 192, 192)',
             tension: 0.1
         }],
-    };
-    graphChart.data = data;
-    graphChart.update();
+    };*/
+    // graphChart.data = data;
+    // graphChart.update();
+    elevationGraph.updateOptions({
+        file: data,
+    });
+    elevationGraph.resize();
 
     /*
     removeData(myChart);

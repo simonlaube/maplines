@@ -34,6 +34,13 @@ pub fn track_geojson(ulid: &str) -> PathBuf {
     geojson_path
 }
 
+pub fn track_elevation(ulid: &str) -> PathBuf {
+    let mut elevation_path = tracks();
+    elevation_path.push(ulid);
+    elevation_path.push("elevation.json");
+    elevation_path
+}
+
 // Shuttle Radar Topographic Mission
 pub fn srtm() -> PathBuf {
     let mut srtm_path = maplines();

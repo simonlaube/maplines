@@ -78,14 +78,14 @@ function onHDragEnd() {
     document.getElementById('content-wrapper').style.cursor = "";
     document.getElementById('content-wrapper').style.pointerEvents = "";
     document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "";
-    map.resize();
+    elevationGraph.resize();
 }
 
 function moveHSeparator(e) {
     let percentTop = e.clientY / e.view.innerHeight * 100;
     let content = document.getElementById("content-wrapper");
     content.style.gridAutoRows = percentTop + "% 0.15rem auto";
-    map.resize();
+    elevationGraph.resize();
 }
 
 function startVDrag(event) {
@@ -106,6 +106,8 @@ function onVDragEnd() {
     document.getElementById('content-wrapper').style.cursor = "";
     document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "";
     map.resize();
+    elevationGraph.resize(0, 0);
+    elevationGraph.resize();
 }
 
 function moveVSeparator(e) {
@@ -114,6 +116,7 @@ function moveVSeparator(e) {
     let content = document.getElementById("content-wrapper");
     content.style.gridAutoColumns = percentLeft + "% 0.15rem auto";
     map.resize();
+    elevationGraph.resize();
 }
 
 function setCursorStyle() {
@@ -242,8 +245,8 @@ function toggleRowSelection(entry) {
                 // ERROR HANDLING
             } else {
                 console.log(response);
-                updateChart(response[0]);
-                addData(response[1]);
+                updateGraph(response[0]);
+                // addData(response[1]);
             }
         });
 
