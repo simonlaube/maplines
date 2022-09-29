@@ -14,12 +14,13 @@ Tool to analyze and visualize GPS data from recorded sport activities.
 - [x] display multiple gps lines (select in table)
 - [ ] group gps lines
 - [x] add start, stop and pause labels on map
-- [ ] add deleting & archiving of tracks
+- [x] add deleting of tracks
+- [ ] add archiving of tracks
 - [x] add editing of tracks
 - [ ] add error dialog box
 - [ ] multiple pause detection iterations (different radii)
 - [ ] use fit field "enhanced speed"
-- [ ] join tracks
+- [x] join tracks
 - [ ] add images and comments to track / route
 - [ ] map select desired layers to display
 - [ ] add custom tags (ride with bike xy, training, trip, ...)
@@ -33,7 +34,6 @@ Tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] add route calculation
 - [ ] add "static routes" and assign recorded tracks to them. (Maybe combine with general route planning...?)
 - [ ] multisport activities
-- [ ] add route creation
 - [ ] display heat map
 - [ ] distinction of recorded tracks and planned tracks
 - [ ] load activities from strava
@@ -46,13 +46,11 @@ Tool to analyze and visualize GPS data from recorded sport activities.
 - [x] improve table design
 - [ ] maplines logo
 - [ ] color effect on imported tracks
-- [ ] row selection color
+- [x] row selection color
 - [ ] import / analysis loading bar
 
 ## Changes to Consider (No immediate priority and potentially not useful)
-- [ ] use cbor instead of json / geojson / gpx
 - [ ] reduce number of gps points per line
-- [ ] try to approximate gps lines to streets of OSM
 
 ## Issues
 - [ ] When connected to internet but reception is very low, maps can't display gps lines
