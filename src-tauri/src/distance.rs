@@ -24,7 +24,6 @@ pub fn calculate(gpx: &Gpx, pauses: &Vec<Pause>) -> f64 {
 
     let mut pause_pos = 0;
 
-
     for (i, p) in gpx.tracks[0].segments[0].points.iter().enumerate() {
         // distance after last pause to end
         if pause_pos == pauses.len() {
@@ -47,7 +46,8 @@ pub fn calculate(gpx: &Gpx, pauses: &Vec<Pause>) -> f64 {
         }
         // End unedited pause line, add direct pause line, start new line, remove first pause from vector
         else {
-            dist += last_p.point().haversine_distance(&p.point().into());
+            // Do not add pause distance to total distance
+            // dist += last_p.point().haversine_distance(&p.point().into());
             last_p = p; // add distance from pause start pos to pause end pos
 
             pause_pos += 1;

@@ -170,3 +170,19 @@ function allInputsValid() {
     }
     return true
 }
+
+function joinRows() {
+    invoke('join_tracks', { ulids: selected_rows })
+    .then(response => {
+        reload_table();
+    })
+}
+
+function deleteEditRow() {
+    for (r of selected_rows) {
+        invoke('delete_track', { ulid : r });
+        removeTrack(row_objects[r]);
+    }
+    reload_table();
+    setNoOverlay();
+}

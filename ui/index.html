@@ -24,6 +24,8 @@
       <div id="menu-bar">
         <div id="table-buttons-wrapper">
           <button id="table-button-edit" onclick="editRow()">Edit</button>
+          <button id="table-button-join" onclick="joinRows()">Join</button>
+          <button id="table-button-recalculate" onclick="recalculateRow()">Recalculate</button>
         </div>
         <div id="display-buttons-wrapper">
           <button id="table-only" onclick="setDisplayState(DisplayState.Table)">|==|</button>
@@ -59,6 +61,7 @@
             </div>
             <button id="cancel-row-edit" onclick="cancelEditRow()">Cancel</button>
             <button id="save-row-edit" onclick="saveEditRow()">Save</button>
+            <button id="delete-row-edit" onclick="deleteEditRow()">Delete</button>
           </div>
         </div>
 

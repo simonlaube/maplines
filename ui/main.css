@@ -159,10 +159,18 @@ body {
     overflow: hidden;
     display: grid;
     grid-auto-rows: 1;
+
+    padding: 0.5rem;
 }
 
 #elevation-graph {
     overflow: hidden;
+}
+
+#elevation-graph div {
+    font-family: 'PT-Root-UI';
+    font-weight: normal;
+    font-size:small;
 }
 
 #hor-content-separator {

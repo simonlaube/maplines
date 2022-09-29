@@ -132,7 +132,7 @@ fn main() {
       }
       _ => {}
     })
-    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses, load_track_display_data, save_track_changes, load_elevation])
+    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses, load_track_display_data, save_track_changes, load_elevation, join_tracks, delete_track])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 
@@ -203,17 +203,16 @@ fn load_track_display_data(ulid: String) -> Option<(Vec<Pause>, GeoJson)> {
 }
 
 #[tauri::command]
-fn load_elevation(ulid: String) -> Option<(Vec<(f64, i32)>, Vec<(f64, i32)>)> {
+fn load_elevation(ulid: String) -> Option<(Vec<(f64, f64)>)> {
   if paths::track_elevation(&ulid).exists() {
     println!("elevation already exists");
-    let ele1 = io::read_elevation(&ulid).unwrap();
-    let ele2 = io::read_elevation(&ulid).unwrap();
-    return Some((ele1, ele2))
+    return Some(io::read_elevation(&ulid).unwrap());
   }
   let gpx = io::read_gpx(&ulid).unwrap();
-  match elevation::from_latlong(gpx) {
+  let ta = io::read_track_analysis(&ulid).unwrap();
+  match elevation::from_latlong(gpx, &ta.pauses) {
     Ok(e) => {
-      io::write_elevation(e.1.clone(), &ulid);
+      io::write_elevation(e.clone(), &ulid);
       Some(e)
     }
     Err(e) => {
@@ -237,4 +236,15 @@ fn save_track_changes(ulid: String, name: String, activity: String) {
     gpx.tracks[0].name = Some(name);
     io::write_gpx(&gpx, &ulid);
   });
+}
+
+#[tauri::command]
+fn delete_track(ulid: String) {
+  // println!("remove {:?}", paths::track(ulid));
+  std::fs::remove_dir_all(paths::track(ulid));
+}
+
+#[tauri::command]
+fn join_tracks(ulids: Vec<String>) {
+  util::join_tracks(ulids);
 }

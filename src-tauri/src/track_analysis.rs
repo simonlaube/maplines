@@ -14,6 +14,7 @@ pub struct TrackAnalysis {
     pub version: i32,
     pub ulid: String,
     pub start_time: Option<String>,
+    pub end_time: Option<String>,
     pub name: Option<String>,
     pub comment: Option<String>,
     pub description: Option<String>,
@@ -38,7 +39,7 @@ impl TrackAnalysis {
         Ok(ta)
     }
 
-    pub fn from_import(ulid: &ulid::Ulid, start_time: &Time, track: &Track, geojson: &GeoJson, gpx: &Gpx, activity: Option<Activity>) -> TrackAnalysis {
+    pub fn new(ulid: &ulid::Ulid, start_time: &Time, end_time: &Time, track: &Track, geojson: &GeoJson, gpx: &Gpx, activity: Option<Activity>) -> TrackAnalysis {
 
         let feature: Feature = Feature::try_from(geojson.clone()).unwrap();
         let gj_geometry: geojson::Geometry = feature.geometry.unwrap();
@@ -64,6 +65,7 @@ impl TrackAnalysis {
             version: crate::ANALYSIS_VERSION,
             ulid: ulid.to_string(),
             start_time: Some(start_time.format().unwrap()),
+            end_time: Some(end_time.format().unwrap()),
             name: track.name.clone(),
             comment: track.comment.clone(),
             description: track.description.clone(),

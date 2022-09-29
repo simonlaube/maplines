@@ -10,8 +10,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::errors::{self, MaplineError};
 use crate::geotiff::TIFFStream;
-use crate::paths;
+use crate::{paths, pause};
 use crate::io;
+use crate::pause::Pause;
 
 const SRTM_FILE_NAME: &str = "srtm_%lon_%lat.tif";
 const SRTM_ZIPF_NAME: &str = "srtm_%lon_%lat.zip";
@@ -41,93 +42,110 @@ struct OpenElevationResult {
     results: Vec<LocationElevation>,
 }
 
-pub fn from_latlong(gpx: Gpx) -> Result<(Vec<(f64, i32)>, Vec<(f64, i32)>), errors::MaplineError> {
+pub fn from_latlong(gpx: Gpx, pauses: &Vec<Pause>) -> Result<(Vec<(f64, f64)>), errors::MaplineError> {
     // map with key = (lon, lat), value = Tile with upper left coord (lon, lat)
     let mut tiles: HashMap<(u8, u8), TIFFStream> = HashMap::new();
     let mut temp_lat: i8;
     let mut temp_lon: i16;
     // let mut elevations: Vec<i32> = vec![];
     // let mut distances: Vec<f64> = vec![];
-    let mut result: Vec<(f64, i32)> = vec![];
+    let mut result: Vec<(f64, f64)> = vec![];
     let mut current_distance = 0.;
     let mut interval_distance = MIN_ELE_INTERVAL;
 
     let mut last_point = &gpx.tracks[0].segments[0].points[0].clone();
     let mut last_ele: Option<f64> = None;
+    let mut current_ele: f64;
 
     let mut up: f64 = 0.;
     let mut down: f64 = 0.;
-    for w in &gpx.tracks[0].segments[0].points {
+
+    let mut pause_pos = 0;
+
+    let mut i = 0;
+    for  w in &gpx.tracks[0].segments[0].points {
         // 0.00042 corresponds to half a pixel of the elevation map
         // TODO: check if this is correct (at edges of the map, on tiles with lat < 0)
-        if w.point().y() > 0. {
-            temp_lat = ((w.point().y() - 0.00042) / 5.0) as i8;
-        } else {
-            temp_lat = ((w.point().y() + 0.00042) / 5.0) as i8;
-        }
-        let tile_lat = 12 - temp_lat;
-        assert!(tile_lat >= 1, "tile latitude must be greater than 1");
-
-        let mut lon: f64 = w.point().x();
-        while lon < 0. {
-            lon += 360.;
-        }
-        temp_lon = ((w.point().x() + 0.00042) / 5.0) as i16;
-        let tile_lon: i16 = ((temp_lon + 36) % 72) + 1;
-        assert!(tile_lon >= 1, "tile longitude must be greater than 1");
-        // println!("lat: {}, lon: {}", tile_lat, tile_lon);
-        if !tiles.contains_key(&(tile_lon as u8, tile_lat as u8)) {
-            load_tile(tile_lon as u8, tile_lat as u8, &mut tiles)?;
-        }
-        let rel_lon: f64 = (w.point().x() - (temp_lon * 5) as f64) / 5.0 * 6000.;
-        let rel_lat: f64 = 6000. - (w.point().y() - (temp_lat * 5) as f64) / 5.0 * 6000.;
-        // println!("point lat: {}, temp lat: {}, rel_lon: {}", w.point().x(), temp_lon * 5);
-
-        // println!("lon: {}, lat: {}", rel_lon, rel_lat);
-        // println!("{}", tiles.get(&(tile_lon as u8, tile_lat as u8)).unwrap().get_value_at(rel_lat as usize, rel_lon as usize));
-        current_distance += last_point.point().haversine_distance(&w.point());
-        interval_distance += last_point.point().haversine_distance(&w.point());
-        last_point = w;
-
-        // only check every nth point
-        if interval_distance >= MIN_ELE_INTERVAL {
-            interval_distance = 0.;
-
-            let mut ele = tiles.get(&(tile_lon as u8, tile_lat as u8)).unwrap().get_value_at(rel_lat as usize, rel_lon as usize) as i32;
-            if ele > 8000 {
-                ele = 0;
+        if pause_pos == pauses.len() || i < pauses.get(pause_pos).unwrap().index_before || i == pauses.get(pause_pos).unwrap().index_before {
+            if w.point().y() > 0. {
+                temp_lat = ((w.point().y() - 0.00042) / 5.0) as i8;
+            } else {
+                temp_lat = ((w.point().y() + 0.00042) / 5.0) as i8;
             }
-            match last_ele {
-                Some(e) => {
-                    if ele as f64 - e > 0. {
-                        up += ele as f64 - e;
-                    } else {
-                        down += e - ele as f64;
-                    }
+            let tile_lat = 12 - temp_lat;
+            assert!(tile_lat >= 1, "tile latitude must be greater than 1");
+
+            let mut lon: f64 = w.point().x();
+            while lon < 0. {
+                lon += 360.;
+            }
+            temp_lon = ((w.point().x() + 0.00042) / 5.0) as i16;
+            let tile_lon: i16 = ((temp_lon + 36) % 72) + 1;
+            assert!(tile_lon >= 1, "tile longitude must be greater than 1");
+            // println!("lat: {}, lon: {}", tile_lat, tile_lon);
+            if !tiles.contains_key(&(tile_lon as u8, tile_lat as u8)) {
+                load_tile(tile_lon as u8, tile_lat as u8, &mut tiles)?;
+            }
+            let rel_lon: f64 = (w.point().x() - (temp_lon * 5) as f64) / 5.0 * 6000.;
+            let rel_lat: f64 = 6000. - (w.point().y() - (temp_lat * 5) as f64) / 5.0 * 6000.;
+            // println!("point lat: {}, temp lat: {}, rel_lon: {}", w.point().x(), temp_lon * 5);
+
+            // println!("lon: {}, lat: {}", rel_lon, rel_lat);
+            // println!("{}", tiles.get(&(tile_lon as u8, tile_lat as u8)).unwrap().get_value_at(rel_lat as usize, rel_lon as usize));
+            current_distance += last_point.point().haversine_distance(&w.point());
+            interval_distance += last_point.point().haversine_distance(&w.point());
+            last_point = w;
+
+            // only check every nth point
+            if interval_distance >= MIN_ELE_INTERVAL {
+                interval_distance = 0.;
+
+                current_ele = tiles.get(&(tile_lon as u8, tile_lat as u8)).unwrap().get_value_at(rel_lat as usize, rel_lon as usize) as f64;
+                if current_ele > 8000. {
+                    current_ele = 0.;
                 }
-                None => (),
+                match last_ele {
+                    Some(e) => {
+                        if current_ele - e > 0. {
+                            up += current_ele - e;
+                        } else {
+                            down += e - current_ele;
+                        }
+                    }
+                    None => (),
+                }
+                last_ele = Some(current_ele);
+                result.push((current_distance / 1000 as f64, current_ele));
             }
-            last_ele = Some(ele as f64);
-            result.push((current_distance, ele));
+        } else if i < pauses.get(pause_pos).unwrap().index_after {
+            // do nothing elevation of pause cluster not calculated
+        } else {
+            current_distance += last_point.point().haversine_distance(&w.point().into());
+            last_point = w;
+            pause_pos += 1;
         }
+        i += 1;
     }
     println!("up: {}, down: {}", up, down);
 
     // smoothed elevation test
-    let mut smoothed: Vec<(f64, i32)> = result.iter().map(|(x, y)| {
+    let mut smoothed: Vec<(f64, f64)> = result.iter().map(|(x, y)| {
         (x.to_owned(), y.to_owned())
     }).collect();
     if result.len() < 3 {
         println!("Not enough data points for profile smoothing.");
     }
     for i in 3..result.len()-3 {
-        smoothed[i].1 = (- 2 * result[i-3].1 + 3 * result[i-2].1 + 6 * result[i-1].1 + 7 * result[i].1 + 6 * result[i+1].1 + 3 * result[i+2].1 - 2 * result[i+3].1) / 21;
+        smoothed[i].1 = (- 2. * result[i-3].1 + 3. * result[i-2].1 + 6. * result[i-1].1 + 7. * result[i].1 + 6. * result[i+1].1 + 3. * result[i+2].1 - 2. * result[i+3].1) / 21.;
+        if smoothed[i].1 < 0. {
+            smoothed[i].1 = 0.;
+        }
     }
-    let mut up_smoothed = 0;
-    let mut down_smoothed = 0;
+    let mut up_smoothed = 0.;
+    let mut down_smoothed = 0.;
     let mut last_ele = smoothed[0].1;
     for p in &smoothed {
-        if p.1 - last_ele > 0 {
+        if p.1 - last_ele > 0. {
             up_smoothed += p.1 - last_ele;
         } else {
             down_smoothed += last_ele - p.1;
@@ -136,7 +154,7 @@ pub fn from_latlong(gpx: Gpx) -> Result<(Vec<(f64, i32)>, Vec<(f64, i32)>), erro
     }
     println!("up_smoothed: {}, down_smoothed: {}", up_smoothed, down_smoothed);
 
-    Ok((result, smoothed))
+    Ok(smoothed)
 
     // Err(errors::MaplineError::CouldNotLoadElevation)
 }

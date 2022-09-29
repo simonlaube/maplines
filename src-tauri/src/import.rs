@@ -28,15 +28,15 @@ pub fn gpx(gpx_path: &PathBuf) -> Result<TrackAnalysis, MaplineError> {
     // TODO: take care of files with multiple tracks or segments
     // TODO: handle files with no timestamp
     let start_time = gpx.tracks[0].segments[0].points[0].time.unwrap();
+    let end_time = gpx.tracks[0].segments[0].points.last().unwrap().time.unwrap();
     if util::track_with_start_time_exists(&start_time.format().unwrap()) {
         return Err(MaplineError::TrackAlreadyImported); // TODO: change to dialog with overrule option
     }
-    // TODO: Check if start_time already present in previous tracks
     let ulid = Ulid::from_datetime(start_time.into());
     let track: Track = gpx.tracks[0].clone();
     
     // analyze geo data
-    let track_analysis = TrackAnalysis::from_import(&ulid, &start_time, &track, &geojson, &gpx, None);
+    let track_analysis = TrackAnalysis::new(&ulid, &start_time, &end_time, &track, &geojson, &gpx, None);
     let geojson = arrange_display(&gpx, Some(geojson), Some(&track_analysis.pauses));
     write_track_analysis(&track_analysis).unwrap();
     write_geojson(&geojson, ulid.clone().to_string().as_str()).unwrap();
@@ -132,6 +132,7 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, MaplineError> {
     gpx.creator = Some(creator);
 
     let start_time = gpx.tracks[0].segments[0].points[0].time.unwrap();
+    let end_time = gpx.tracks[0].segments[0].points.last().unwrap().time.unwrap();
     // TODO: check this earlier
     if util::track_with_start_time_exists(&start_time.format().unwrap()) {
         return Err(MaplineError::TrackAlreadyImported); // TODO: change to dialog with overrule option
@@ -139,7 +140,7 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, MaplineError> {
     let ulid = Ulid::from_datetime(start_time.into());
     let geojson = arrange_display(&gpx, None, None);
 
-    let track_analysis = TrackAnalysis::from_import(&ulid, &start_time, &gpx.tracks[0], &geojson, &gpx, Some(activity));
+    let track_analysis = TrackAnalysis::new(&ulid, &start_time, &end_time, &gpx.tracks[0], &geojson, &gpx, Some(activity));
     write_track_analysis(&track_analysis).unwrap();
     let geojson = arrange_display(&gpx, Some(geojson), Some(&track_analysis.pauses));
     write_geojson(&geojson, ulid.clone().to_string().as_str()).unwrap();

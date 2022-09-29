@@ -3,7 +3,12 @@ var elevationGraph = new Dygraph(
     "X,Y\n" +
     "0, 0\n",
     {
-        showRangeSelector : true,
+        showRangeSelector : false,
+        panEdgeFraction : 0.05,
+        gridLineColor : "#ccc",
+        colors : [ "#9f2dcf" ],
+        strokeWidth : 1.0,
+        fillGraph : true,
     }
 );
 elevationGraph.resize();

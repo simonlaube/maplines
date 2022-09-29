@@ -13,6 +13,13 @@ pub fn tracks() -> PathBuf {
     tracks_path
 }
 
+pub fn track(ulid: String) -> PathBuf {
+    let mut track_path = maplines();
+    track_path.push("tracks");
+    track_path.push(ulid);
+    track_path
+}
+
 pub fn track_analysis(ulid: &str) -> PathBuf {
     let mut track_analysis = tracks();
     track_analysis.push(ulid);

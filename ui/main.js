@@ -106,7 +106,6 @@ function onVDragEnd() {
     document.getElementById('content-wrapper').style.cursor = "";
     document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "";
     map.resize();
-    elevationGraph.resize(0, 0);
     elevationGraph.resize();
 }
 
@@ -200,10 +199,7 @@ function toggleRowSelection(entry) {
                 row.classList.remove("selected-row");
             }
         });
-        removeMove(entry);
-        removePause(entry);
-        removePauseUned(entry);
-        removeTrackIcons(entry);
+        removeTrack(entry);
         // remove from ulid array
         selected_rows = selected_rows.filter(function(e) { 
             return e != entry.ulid; 
@@ -244,8 +240,7 @@ function toggleRowSelection(entry) {
             if (response == null) {
                 // ERROR HANDLING
             } else {
-                console.log(response);
-                updateGraph(response[0]);
+                updateGraph(response);
                 // addData(response[1]);
             }
         });

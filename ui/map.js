@@ -208,3 +208,10 @@ function removeTrackIcons(entry) {
         icon.remove();
     })
 }
+
+function removeTrack(entry) {
+    removeMove(entry);
+    removePause(entry);
+    removePauseUned(entry);
+    removeTrackIcons(entry);
+}
