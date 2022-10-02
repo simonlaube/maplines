@@ -86,7 +86,6 @@ function onHDragEnd() {
 
 function moveHSeparator(e) {
     console.log(e);
-    
     // let percentTop = e.clientY / e.view.innerHeight * 100;
     let percentTop = e.clientY / e.view.innerHeight * 100;
     let content = document.getElementById("content-wrapper");
