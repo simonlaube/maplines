@@ -61,9 +61,11 @@ function disableSelect(event) {
 
 function startHDrag(event) {
     console.log("drag start");
-    document.getElementById('content-wrapper').style.cursor = "ns-resize";
-    document.getElementById('content-wrapper').style.pointerEvents = "none";
     document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "ns-resize";
+    document.getElementById('content-wrapper').style.cursor = "ns-resize";
+    document.getElementById('elevation-graph').style.cursor = "ns-resize";
+    document.getElementById('hor-content-separator').style.cursor = "ns-resize";
+    document.getElementById('content-wrapper').style.pointerEvents = "none";
     window.addEventListener('mouseup', onHDragEnd);
     window.addEventListener('selectstart', disableSelect);
     window.addEventListener('mousemove', moveHSeparator);
@@ -76,12 +78,15 @@ function onHDragEnd() {
     window.removeEventListener('selectstart', disableSelect);
     window.removeEventListener('mousemove', moveHSeparator);
     document.getElementById('content-wrapper').style.cursor = "";
+    document.getElementById('elevation-graph').style.cursor = "";
     document.getElementById('content-wrapper').style.pointerEvents = "";
     document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "";
     elevationGraph.resize();
 }
 
 function moveHSeparator(e) {
+    console.log(e);
+    // let percentTop = e.clientY / e.view.innerHeight * 100;
     let percentTop = e.clientY / e.view.innerHeight * 100;
     let content = document.getElementById("content-wrapper");
     content.style.gridAutoRows = percentTop + "% 0.15rem auto";
