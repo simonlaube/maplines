@@ -25,7 +25,7 @@
         <div id="table-buttons-wrapper">
           <button id="table-button-edit" onclick="editRow()">Edit</button>
           <button id="table-button-join" onclick="joinRows()">Join</button>
-          <button id="table-button-recalculate" onclick="recalculateRow()">Recalculate</button>
+          <button id="table-button-recalculate" onclick="recalculateRows()">Recalculate</button>
         </div>
         <div id="display-buttons-wrapper">
           <button id="table-only" onclick="setDisplayState(DisplayState.Table)">|==|</button>
@@ -63,6 +63,10 @@
             <button id="save-row-edit" onclick="saveEditRow()">Save</button>
             <button id="delete-row-edit" onclick="deleteEditRow()">Delete</button>
           </div>
+          <div id="loading-info">
+            <div id="loading-bar"></div>
+            <b id="loading-text"></b>
+          </div>
         </div>
 
         <div id="hor-content-separator">
@@ -81,6 +85,13 @@
               <th>Activity</th>
               <th>Name</th>
               <th>Distance (km)</th>
+              <th>Avg Vel</th>
+              <th>Time Moving</th>
+              <th>Time Total</th>
+              <th>Ele. Gain</th>
+              <th>Ele. Loss</th>
+              <th>Max Ele.</th>
+              <th>Min Ele.</th>
               <th>Creator</th>
             </thead>
             <tbody id="gpxTableBody"></tbody>

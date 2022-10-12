@@ -1,12 +1,14 @@
 use geo::Extremes;
 use geojson::{GeoJson, Feature, Value, };
 use serde::{Serialize, Deserialize};
-use ulid;
+use time::OffsetDateTime;
+use ulid::{self, Ulid};
 use gpx::{Time, Track, Gpx};
 use std::path::PathBuf;
 use std::fs;
+use std::time::Duration;
 
-use crate::distance;
+use crate::{distance, elevation, io};
 use crate::pause::{self, Pause};
 /// same as Track but without links and segments
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -15,6 +17,8 @@ pub struct TrackAnalysis {
     pub ulid: String,
     pub start_time: Option<String>,
     pub end_time: Option<String>,
+    pub time_moving: Option<u64>,
+    pub time_total: Option<u64>,
     pub name: Option<String>,
     pub comment: Option<String>,
     pub description: Option<String>,
@@ -29,6 +33,11 @@ pub struct TrackAnalysis {
     pub start_coords: (f64, f64),
     pub end_coords: (f64, f64),
     pub distance: f64, // in kilometers
+    pub avg_vel: Option<f64>, // in kph
+    pub ele_gain: Option<f64>,
+    pub ele_loss: Option<f64>,
+    pub ele_max: Option<f64>,
+    pub ele_min: Option<f64>,
     pub pauses: Vec<Pause>,
 }
 
@@ -39,7 +48,9 @@ impl TrackAnalysis {
         Ok(ta)
     }
 
-    pub fn new(ulid: &ulid::Ulid, start_time: &Time, end_time: &Time, track: &Track, geojson: &GeoJson, gpx: &Gpx, activity: Option<Activity>) -> TrackAnalysis {
+    pub fn new(ulid: Option<String>, geojson: &GeoJson, gpx: &Gpx, activity: Option<Activity>) -> TrackAnalysis {
+
+        let track: Track = gpx.tracks[0].clone();
 
         let feature: Feature = Feature::try_from(geojson.clone()).unwrap();
         let gj_geometry: geojson::Geometry = feature.geometry.unwrap();
@@ -60,12 +71,39 @@ impl TrackAnalysis {
         };
         let pauses: Vec<Pause> = pause::find(gpx);
         let distance = distance::calculate(gpx, &pauses);
+        let start_time = gpx.tracks[0].segments[0].points[0].time.unwrap();
+        let start_odt: OffsetDateTime = start_time.into();
+        let end_time = gpx.tracks[0].segments[0].points.last().unwrap().time.unwrap();
+        let end_odt: OffsetDateTime = end_time.into();
+        let time_total = (end_odt.unix_timestamp() - start_odt.unix_timestamp()).abs() as u64;
+        let time_moving = time_total - pauses.iter().map(|x| x.duration_sec).sum::<u64>();
+        let avg_vel: f64 = (distance / 1000.) / (time_moving as f64 / 3600.);
+        println!("avg_vel: {}", avg_vel);
+
+        // let duration = Duration::from_secs(secs)
+        // let time_total: std::time::Duration = end_time. - start_time;
+
+        let ulid = match ulid {
+            Some(u) => u,
+            None => Ulid::from_datetime(start_time.into()).to_string(),
+        };
+
+        let (ele, ele_gain, ele_loss, ele_max, ele_min) = match elevation::from_latlong(gpx, &pauses) {
+            Ok(e) => e,
+            Err(e) => {
+                println!("{:?}", e);
+                (vec![], 0., 0., 0., 0.)
+            }
+        };
+        io::write_elevation(ele, &ulid);
 
         TrackAnalysis {
             version: crate::ANALYSIS_VERSION,
-            ulid: ulid.to_string(),
+            ulid: ulid,
             start_time: Some(start_time.format().unwrap()),
             end_time: Some(end_time.format().unwrap()),
+            time_total: Some(time_total),
+            time_moving: Some(time_moving),
             name: track.name.clone(),
             comment: track.comment.clone(),
             description: track.description.clone(),
@@ -80,6 +118,11 @@ impl TrackAnalysis {
             start_coords,
             end_coords,
             distance,
+            avg_vel: Some(avg_vel),
+            ele_gain: Some(ele_gain),
+            ele_loss: Some(ele_loss),
+            ele_max: Some(ele_max),
+            ele_min: Some(ele_min),
             pauses,
         }
     }

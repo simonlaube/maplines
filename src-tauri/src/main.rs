@@ -132,7 +132,7 @@ fn main() {
       }
       _ => {}
     })
-    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses, load_track_display_data, save_track_changes, load_elevation, join_tracks, delete_track])
+    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses, load_track_display_data, save_track_changes, load_elevation, join_tracks, delete_track, recalculate_track])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 
@@ -205,21 +205,9 @@ fn load_track_display_data(ulid: String) -> Option<(Vec<Pause>, GeoJson)> {
 #[tauri::command]
 fn load_elevation(ulid: String) -> Option<(Vec<(f64, f64)>)> {
   if paths::track_elevation(&ulid).exists() {
-    println!("elevation already exists");
     return Some(io::read_elevation(&ulid).unwrap());
   }
-  let gpx = io::read_gpx(&ulid).unwrap();
-  let ta = io::read_track_analysis(&ulid).unwrap();
-  match elevation::from_latlong(gpx, &ta.pauses) {
-    Ok(e) => {
-      io::write_elevation(e.clone(), &ulid);
-      Some(e)
-    }
-    Err(e) => {
-      println!("{:?}", e);
-      None
-    }
-  }
+  None
 }
 
 #[tauri::command]
@@ -247,4 +235,9 @@ fn delete_track(ulid: String) {
 #[tauri::command]
 fn join_tracks(ulids: Vec<String>) {
   util::join_tracks(ulids);
+}
+
+#[tauri::command]
+fn recalculate_track(ulid: String) {
+  util::recalculate_track(ulid);
 }

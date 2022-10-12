@@ -4,7 +4,8 @@ use gpx::Track;
 
 use crate::io::{self, write_track_analysis, write_geojson, write_gpx};
 use crate::line::arrange_display;
-use crate::track_analysis::TrackAnalysis;
+use crate::track_analysis::{TrackAnalysis, self};
+use crate::{pause, elevation};
 
 
 pub fn track_with_start_time_exists(start_time: &String) -> bool {
@@ -45,19 +46,28 @@ pub fn join_tracks(ulids: Vec<String>) -> Option<()> {
         }
     }
     let geojson = arrange_display(&new_gpx, None, None);
-    let start_time = new_gpx.tracks[0].segments[0].points[0].time.unwrap();
-    let end_time = new_gpx.tracks[0].segments[0].points.last().unwrap().time.unwrap();
-
-    let ulid = Ulid::from_datetime(start_time.into());
-    let track: Track = new_gpx.tracks[0].clone();
     
     // analyze geo data
-    let track_analysis = TrackAnalysis::new(&ulid, &start_time, &end_time, &track, &geojson, &new_gpx, None);
+    let track_analysis = TrackAnalysis::new(None, &geojson, &new_gpx, None);
     let geojson = arrange_display(&new_gpx, Some(geojson), Some(&track_analysis.pauses));
     write_track_analysis(&track_analysis).unwrap();
-    write_geojson(&geojson, ulid.clone().to_string().as_str()).unwrap();
-    write_gpx(&new_gpx, &ulid.to_string()).unwrap();
+    write_geojson(&geojson, &track_analysis.ulid).unwrap();
+    write_gpx(&new_gpx, &track_analysis.ulid).unwrap();
 
     println!("done");
     Some(())
+}
+
+pub fn recalculate_track(ulid: String) {
+    let gpx = io::read_gpx(&ulid).unwrap();
+    let old_ta = io::read_track_analysis(&ulid).unwrap();
+
+    let geojson = arrange_display(&gpx, None, None);
+    
+    // analyze geo data
+    let ta = TrackAnalysis::new(Some(ulid), &geojson, &gpx, Some(old_ta._type));
+    let geojson = arrange_display(&gpx, Some(geojson), Some(&ta.pauses));
+    
+    write_track_analysis(&ta).unwrap();
+    write_geojson(&geojson, &ta.ulid).unwrap();
 }

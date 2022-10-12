@@ -42,7 +42,7 @@ struct OpenElevationResult {
     results: Vec<LocationElevation>,
 }
 
-pub fn from_latlong(gpx: Gpx, pauses: &Vec<Pause>) -> Result<(Vec<(f64, f64)>), errors::MaplineError> {
+pub fn from_latlong(gpx: &Gpx, pauses: &Vec<Pause>) -> Result<(Vec<(f64, f64)>, f64, f64, f64, f64), errors::MaplineError> {
     // map with key = (lon, lat), value = Tile with upper left coord (lon, lat)
     let mut tiles: HashMap<(u8, u8), TIFFStream> = HashMap::new();
     let mut temp_lat: i8;
@@ -141,20 +141,27 @@ pub fn from_latlong(gpx: Gpx, pauses: &Vec<Pause>) -> Result<(Vec<(f64, f64)>), 
             smoothed[i].1 = 0.;
         }
     }
-    let mut up_smoothed = 0.;
-    let mut down_smoothed = 0.;
+    let mut ele_gain = 0.;
+    let mut ele_loss = 0.;
+    let mut ele_max = -414.; // lowest point on earth
+    let mut ele_min = 8849.; // highest point on earth
+
     let mut last_ele = smoothed[0].1;
     for p in &smoothed {
+
+        if p.1 > ele_max { ele_max = p.1; }
+        if p.1 < ele_min { ele_min = p.1; }
+
         if p.1 - last_ele > 0. {
-            up_smoothed += p.1 - last_ele;
+            ele_gain += p.1 - last_ele;
         } else {
-            down_smoothed += last_ele - p.1;
+            ele_loss += last_ele - p.1;
         }
         last_ele = p.1;
     }
-    println!("up_smoothed: {}, down_smoothed: {}", up_smoothed, down_smoothed);
+    println!("up_smoothed: {}, down_smoothed: {}", ele_gain, ele_loss);
 
-    Ok(smoothed)
+    Ok((smoothed, ele_gain, ele_loss, ele_max, ele_min))
 
     // Err(errors::MaplineError::CouldNotLoadElevation)
 }

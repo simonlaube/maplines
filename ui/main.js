@@ -17,6 +17,7 @@ var currentDisplayState = DisplayState.Analysis;
 const OverlayState = {
     None: 'None',
     RowEdit: 'RowEdit',
+    Loading: 'Loading',
     Settings: 'Settings',
 };
 var currentOverlayState = OverlayState.None;
@@ -156,14 +157,34 @@ function add_to_table(entry, sort) {
     ulid.style.display = "none"; // used to identify row but don't display
     let time = row.insertCell(1);
     let datetime = new Date(entry.start_time);
-    time.innerHTML = datetime.toLocaleDateString();
+    // time.innerHTML = datetime.toLocaleDateString();
+    time.innerHTML = datetime.toLocaleDateString().replaceAll('/', '-');
     let type = row.insertCell(2);
     type.innerHTML = entry._type;
     let name = row.insertCell(3);
     name.innerHTML = entry.name;
     let distance = row.insertCell(4);
     distance.innerHTML = (entry.distance / 1000).toFixed(2);
-    let creator = row.insertCell(5);
+    let avgVel = row.insertCell(5);
+    if (entry.avg_vel === null) {
+        entry.avg_vel = 0.0;
+    }
+    avgVel.innerHTML = entry.avg_vel.toFixed(2);
+    let timeMoving = row.insertCell(6);
+    // timeMoving.innerHTML = entry.time_moving;
+    // timeMoving.innerHTML = new Date(1000 * entry.time_moving - 3600000).toTimeString().substring(0, 8);
+    timeMoving.innerHTML = new Date(1000 * entry.time_moving - 3600000).toLocaleTimeString();
+    let timeTotal = row.insertCell(7);
+    timeTotal.innerHTML = new Date(1000 * entry.time_total - 3600000).toLocaleTimeString();
+    let eleGain = row.insertCell(8);
+    eleGain.innerHTML = Math.round(entry.ele_gain);
+    let eleLoss = row.insertCell(9);
+    eleLoss.innerHTML = Math.round(entry.ele_loss);
+    let maxEle = row.insertCell(10);
+    maxEle.innerHTML = Math.round(entry.ele_max);
+    let minEle = row.insertCell(11);
+    minEle.innerHTML = Math.round(entry.ele_min);
+    let creator = row.insertCell(12);
     creator.innerHTML = entry.creator;
 
     row.addEventListener("click", (event) => {
@@ -278,6 +299,7 @@ function setNoOverlay() {
     if (currentOverlayState !== OverlayState.None) {
         currentOverlayState = OverlayState.None;
         deactivateRowEdit();
+        deactivateLoading();
         // TODO: deactivate all other possible overlay menus
         deactivateOverlay();
         // activateMenuBar();
@@ -291,6 +313,14 @@ function setEditRowOverlay() {
         activateOverlay();
         activateRowEdit();
     }
+}
+
+function setLoadingInfoOverlay() {
+    if (currentOverlayState === OverlayState.None) {
+        currentOverlayState = OverlayState.Loading;
+    }
+    activateOverlay();
+    activateLoading();
 }
 
 function activateOverlay() {
@@ -348,6 +378,16 @@ function activateRowEdit() {
 function deactivateRowEdit() {
     let rowEdit = document.getElementById('row-edit');
     rowEdit.style.display = "";
+}
+
+function activateLoading() {
+    let loading = document.getElementById('loading-info');
+    loading.style.display = "block";
+}
+
+function deactivateLoading() {
+    let loading = document.getElementById('loading-info');
+    loading.style.display = "";
 }
 
 function setDisplayState(state) {

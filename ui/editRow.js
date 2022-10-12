@@ -178,6 +178,23 @@ function joinRows() {
     })
 }
 
+async function recalculateRows() {
+    var pos = 0;
+    document.getElementById('loading-text').innerHTML = pos + " / " + selected_rows.length;
+    setLoadingInfoOverlay();
+    for (ulid of selected_rows) {
+        await invoke('recalculate_track', { ulid: ulid })
+        .then(response => {
+            pos += 1;
+            document.getElementById('loading-text').innerHTML = pos + " / " + selected_rows.length;
+            document.getElementById('loading-bar').style.width = pos / selected_rows.length * 100 + "%";
+        })
+    }
+    reload_table();
+    setNoOverlay();
+    document.getElementById('loading-bar').style.width = "0%";
+}
+
 function deleteEditRow() {
     for (r of selected_rows) {
         invoke('delete_track', { ulid : r });
