@@ -215,3 +215,13 @@ function removeTrack(entry) {
     removePauseUned(entry);
     removeTrackIcons(entry);
 }
+
+function setSatelliteStyle() {
+    if (document.getElementById('satellite').innerHTML === 'satellite') {
+        map.setStyle('https://api.maptiler.com/maps/hybrid/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL');
+        document.getElementById('satellite').innerHTML = 'vector';
+    } else {
+        map.setStyle('maplibre-gl@2.1.9/style/normal.json');
+        document.getElementById('satellite').innerHTML = 'satellite';
+    }
+}

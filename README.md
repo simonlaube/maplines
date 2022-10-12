@@ -27,6 +27,7 @@ Tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] add group tags (italy summer 2022, to amsterdam 2017, training for marathon 2024, swiss loppet, ...)
 - [ ] add weather tags (sunny, cloudy, rainy, stormy, ...)
 - [ ] add infobox to ui elements and attributes (e.g. explain pause / elevation / distance calculation, ...)
+- [x] add satellite map option
 
 ## More Distant Future Features
 - [ ] add track grouping (e.g. group all tracks belonging to a completed tour or tracks with the same route. maybe with tags?)
