@@ -353,10 +353,9 @@ tbody tr:hover td {
     display: none;
 }
 #loading-info {
-    width: 40px;
-    height: 5px;
+    width: 180px;
+    height: 25px;
     background-color: #fff;
-    padding: 1rem;
     display: none;
     position: relative;
     border-radius: 5px;
@@ -370,6 +369,7 @@ tbody tr:hover td {
     height: 100%;
     z-index: 10;
     font-family: 'Vela-Sans';
+    font-size: small;
     text-align: center;
 }
 #loading-bar {

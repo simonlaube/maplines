@@ -45,8 +45,8 @@ struct OpenElevationResult {
 pub fn from_latlong(gpx: &Gpx, pauses: &Vec<Pause>) -> Result<(Vec<(f64, f64)>, f64, f64, f64, f64), errors::MaplineError> {
     // map with key = (lon, lat), value = Tile with upper left coord (lon, lat)
     let mut tiles: HashMap<(u8, u8), TIFFStream> = HashMap::new();
-    let mut temp_lat: i8;
-    let mut temp_lon: i16;
+    let mut temp_lon: i8;
+    let mut temp_lat: i16;
     // let mut elevations: Vec<i32> = vec![];
     // let mut distances: Vec<f64> = vec![];
     let mut result: Vec<(f64, f64)> = vec![];
@@ -68,26 +68,26 @@ pub fn from_latlong(gpx: &Gpx, pauses: &Vec<Pause>) -> Result<(Vec<(f64, f64)>, 
         // TODO: check if this is correct (at edges of the map, on tiles with lat < 0)
         if pause_pos == pauses.len() || i < pauses.get(pause_pos).unwrap().index_before || i == pauses.get(pause_pos).unwrap().index_before {
             if w.point().y() > 0. {
-                temp_lat = ((w.point().y() - 0.00042) / 5.0) as i8;
+                temp_lon = ((w.point().y() - 0.00042) / 5.0) as i8;
             } else {
-                temp_lat = ((w.point().y() + 0.00042) / 5.0) as i8;
+                temp_lon = ((w.point().y() + 0.00042) / 5.0) as i8;
             }
-            let tile_lat = 12 - temp_lat;
+            let tile_lat = 12 - temp_lon;
             assert!(tile_lat >= 1, "tile latitude must be greater than 1");
 
             let mut lon: f64 = w.point().x();
             while lon < 0. {
                 lon += 360.;
             }
-            temp_lon = ((w.point().x() + 0.00042) / 5.0) as i16;
-            let tile_lon: i16 = ((temp_lon + 36) % 72) + 1;
+            temp_lat = ((w.point().x() + 0.00042) / 5.0) as i16;
+            let tile_lon: i16 = ((temp_lat + 36) % 72) + 1;
             assert!(tile_lon >= 1, "tile longitude must be greater than 1");
             // println!("lat: {}, lon: {}", tile_lat, tile_lon);
             if !tiles.contains_key(&(tile_lon as u8, tile_lat as u8)) {
                 load_tile(tile_lon as u8, tile_lat as u8, &mut tiles)?;
             }
-            let rel_lon: f64 = (w.point().x() - (temp_lon * 5) as f64) / 5.0 * 6000.;
-            let rel_lat: f64 = 6000. - (w.point().y() - (temp_lat * 5) as f64) / 5.0 * 6000.;
+            let rel_lat: f64 = (w.point().x() - (temp_lat * 5) as f64) / 5.0 * 6000.;
+            let rel_lon: f64 = 6000. - (w.point().y() - (temp_lon * 5) as f64) / 5.0 * 6000.;
             // println!("point lat: {}, temp lat: {}, rel_lon: {}", w.point().x(), temp_lon * 5);
 
             // println!("lon: {}, lat: {}", rel_lon, rel_lat);
@@ -99,8 +99,46 @@ pub fn from_latlong(gpx: &Gpx, pauses: &Vec<Pause>) -> Result<(Vec<(f64, f64)>, 
             // only check every nth point
             if interval_distance >= MIN_ELE_INTERVAL {
                 interval_distance = 0.;
+                
+                let mut x_weight = rel_lon - (rel_lon as u32) as f64 - 0.5;
+                let mut rel_lon_2 = rel_lon;
+                // At the edge of the elevation map, elevation is not interpolated
+                if x_weight < 0.0 { // use elevation to the left
+                    x_weight = x_weight * -1.;
+                    if rel_lon_2 as usize == 0 { break; }
+                    rel_lon_2 -= 1.;
+                } else { // use elevation to the right
+                    if rel_lon_2 as usize == 5999 { break; }
+                    rel_lon_2 += 1.;
+                }
+                let mut y_weight = rel_lat - (rel_lat as u32) as f64;
+                let mut rel_lat_2 = rel_lat;
+                if y_weight < 0.0 { // use elevation to the left
+                    y_weight = y_weight * -1.;
+                    if rel_lat_2 as usize == 0 { break; }
+                    rel_lat_2 -= 1.;
+                } else { // use elevation to the right
+                    if rel_lat_2 as usize == 5999 { break; }
+                    rel_lat_2 += 1.;
+                }
+                let tile = tiles.get(&(tile_lon as u8, tile_lat as u8)).unwrap();
+                let mut ele_11 = tile.get_value_at(rel_lon as usize, rel_lat as usize) as f64;
+                let mut ele_21 = tile.get_value_at(rel_lon_2 as usize, rel_lat as usize) as f64;
+                
+                let tile = tiles.get(&(tile_lon as u8, tile_lat as u8)).unwrap();
+                let mut ele_12 = tile.get_value_at(rel_lon as usize, rel_lat_2 as usize) as f64;
+                let mut ele_22 = tile.get_value_at(rel_lon_2 as usize, rel_lat_2 as usize) as f64;
+                if (ele_11 - ele_21).abs() > 2000. || (ele_12 - ele_22).abs() > 2000. || (ele_11 - ele_22).abs() > 2000. {
+                    ele_11 = 0.;
+                    ele_21 = 0.;
+                    ele_12 = 0.;
+                    ele_22 = 0.;
+                }
 
-                current_ele = tiles.get(&(tile_lon as u8, tile_lat as u8)).unwrap().get_value_at(rel_lat as usize, rel_lon as usize) as f64;
+                current_ele = (ele_11 * (1. - x_weight) + ele_21 * x_weight) * (1. - y_weight) + (ele_12 * (1. - x_weight) + ele_22 * x_weight) * y_weight;
+                
+                // calculation without interpolation of four elevation pixels
+                // current_ele = tiles.get(&(tile_lon as u8, tile_lat as u8)).unwrap().get_value_at(rel_lon as usize, rel_lat as usize) as f64;
                 if current_ele > 8000. {
                     current_ele = 0.;
                 }

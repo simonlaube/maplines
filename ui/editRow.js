@@ -180,13 +180,13 @@ function joinRows() {
 
 async function recalculateRows() {
     var pos = 0;
-    document.getElementById('loading-text').innerHTML = pos + " / " + selected_rows.length;
+    document.getElementById('loading-text').innerHTML = "calculating... (" + pos + " / " + selected_rows.length + ")";
     setLoadingInfoOverlay();
     for (ulid of selected_rows) {
         await invoke('recalculate_track', { ulid: ulid })
         .then(response => {
             pos += 1;
-            document.getElementById('loading-text').innerHTML = pos + " / " + selected_rows.length;
+            document.getElementById('loading-text').innerHTML = "calculating... (" + pos + " / " + selected_rows.length + ")";
             document.getElementById('loading-bar').style.width = pos / selected_rows.length * 100 + "%";
         })
     }
