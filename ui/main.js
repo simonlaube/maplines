@@ -205,7 +205,6 @@ function clear_table_selection() {
     for (var ulid of selected_rows) {
         var rows = table_body.rows;
         for (var row of rows) {
-            console.log(row.querySelectorAll("td")[0].innerHTML);
             if (row.querySelectorAll("td")[0].innerHTML == ulid) {
                 // row.classList.remove("selected-row");
                 toggleRowSelection(row_objects[ulid]);
@@ -225,7 +224,7 @@ function toggleRowSelection(entry) {
                 row.classList.remove("selected-row");
             }
         });
-        removeTrack(entry);
+        removeTrack(entry.ulid);
         // remove from ulid array
         selected_rows = selected_rows.filter(function(e) { 
             return e != entry.ulid; 
@@ -246,9 +245,10 @@ function toggleRowSelection(entry) {
             var move = geometries[0];
             var pause = geometries[1];
             var unedPause = geometries[2];
-            addMove(entry, move);
-            addPause(entry, pause);
-            addUnedPause(entry, unedPause);
+            /*addMove(entry.ulid, move);
+            addPause(entry.ulid, pause);
+            addUnedPause(entry.ulid, unedPause);*/
+            addTrack(entry.ulid, move, pause, unedPause);
             var nb = [[entry.x_min[0], entry.y_min[1]], [entry.x_max[0], entry.y_max[1]]]; // bounding box of new line
             if (selected_rows.length == 1) {
                 b = nb;

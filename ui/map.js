@@ -16,8 +16,22 @@ function init_map() {
     });
 }
 
-function addMove(entry, geom) {
-    map.addSource(entry.ulid + ' gps-line', {
+var curr_move_line = [];
+var curr_uned_pause_line = [];
+var curr_pause_line = [];
+
+function addTrack(ulid, move, pause, uned_pause) {
+    addMove(ulid, move);
+    addPause(ulid, pause);
+    addUnedPause(ulid, uned_pause);
+    curr_move_line.push([ulid, move]);
+    curr_pause_line.push([ulid, pause]);
+    curr_uned_pause_line.push([ulid, uned_pause]);
+}
+
+function addMove(ulid, geom) {
+    console.log("add source: " + ulid + " gps-line");
+    map.addSource(ulid + ' gps-line', {
         'type': 'geojson',
         'data': {
             'type': 'Feature',
@@ -29,9 +43,9 @@ function addMove(entry, geom) {
         }
     });
     map.addLayer({
-        'id': entry.ulid + ' gps-line',
+        'id': ulid + ' gps-line',
         'type': 'line',
-        'source': entry.ulid + ' gps-line',
+        'source': ulid + ' gps-line',
         'layout': {
             'line-join': 'round',
             'line-cap': 'round'
@@ -41,12 +55,12 @@ function addMove(entry, geom) {
             'line-width': 3
         }
     });
-    var line = map.getSource(entry.ulid + " gps-line");
+    var line = map.getSource(ulid + " gps-line");
     line.setData(geom);
 }
 
-function addPause(entry, geom) {
-    map.addSource(entry.ulid + ' pause-line', {
+function addPause(ulid, geom) {
+    map.addSource(ulid + ' pause-line', {
         'type': 'geojson',
         'data': {
             'type': 'Feature',
@@ -58,9 +72,9 @@ function addPause(entry, geom) {
         }
     });
     map.addLayer({
-        'id': entry.ulid + ' pause-line',
+        'id': ulid + ' pause-line',
         'type': 'line',
-        'source': entry.ulid + ' pause-line',
+        'source': ulid + ' pause-line',
         'layout': {
             'line-join': 'round',
             'line-cap': 'round'
@@ -71,12 +85,12 @@ function addPause(entry, geom) {
             'line-dasharray': [2, 2]
         }
     });
-    var line = map.getSource(entry.ulid + " pause-line");
+    var line = map.getSource(ulid + " pause-line");
     line.setData(geom);
 }
 
-function addUnedPause(entry, geom) {
-    map.addSource(entry.ulid + ' uned-pause-line', {
+function addUnedPause(ulid, geom) {
+    map.addSource(ulid + ' uned-pause-line', {
         'type': 'geojson',
         'data': {
             'type': 'Feature',
@@ -88,9 +102,9 @@ function addUnedPause(entry, geom) {
         }
     });
     map.addLayer({
-        'id': entry.ulid + ' uned-pause-line',
+        'id': ulid + ' uned-pause-line',
         'type': 'line',
-        'source': entry.ulid + ' uned-pause-line',
+        'source': ulid + ' uned-pause-line',
         'layout': {
             'line-join': 'round',
             'line-cap': 'round'
@@ -101,23 +115,23 @@ function addUnedPause(entry, geom) {
             'line-opacity': 0.2
         }
     });
-    var line = map.getSource(entry.ulid + " uned-pause-line");
+    var line = map.getSource(ulid + " uned-pause-line");
     line.setData(geom);
 }
 
-function removeMove(entry) {
-    map.removeLayer(entry.ulid + ' gps-line');
-    map.removeSource(entry.ulid + ' gps-line');
+function removeMove(ulid) {
+    map.removeLayer(ulid + ' gps-line');
+    map.removeSource(ulid + ' gps-line');
 }
 
-function removePause(entry) {
-    map.removeLayer(entry.ulid + ' pause-line');
-    map.removeSource(entry.ulid + ' pause-line');
+function removePause(ulid) {
+    map.removeLayer(ulid + ' pause-line');
+    map.removeSource(ulid + ' pause-line');
 }
 
-function removePauseUned(entry) {
-    map.removeLayer(entry.ulid + ' uned-pause-line');
-    map.removeSource(entry.ulid + ' uned-pause-line');
+function removePauseUned(ulid) {
+    map.removeLayer(ulid + ' uned-pause-line');
+    map.removeSource(ulid + ' uned-pause-line');
 }
 
 function addTrackIcons(entry) {
@@ -203,25 +217,162 @@ function addPauseIcons(entry, pauses) {
     });
 }
 
-function removeTrackIcons(entry) {
-    document.querySelectorAll(".track-icon" + entry.ulid).forEach(icon => {
+function removeTrackIcons(ulid) {
+    document.querySelectorAll(".track-icon" + ulid).forEach(icon => {
         icon.remove();
     })
 }
 
-function removeTrack(entry) {
-    removeMove(entry);
-    removePause(entry);
-    removePauseUned(entry);
-    removeTrackIcons(entry);
+function removeTrack(ulid) {
+    removeMove(ulid);
+    removePause(ulid);
+    removePauseUned(ulid);
+    removeTrackIcons(ulid);
+    // remove ulid and geometry from cache
+    for (i = 0; i < curr_move_line.length; i++) {
+        if (curr_move_line[i][0] === ulid) {
+            curr_move_line.pop(i);
+            curr_pause_line.pop(i);
+            curr_uned_pause_line.pop(i);
+        }
+    }
 }
 
 function setSatelliteStyle() {
+    
+}
+
+async function setSatelliteStyle() {
+    
+    /*
+    let savedLayers = [];
+    let savedSources = [];
+    map.getStyle().layers.forEach((layer) => {
+        if (!selected_rows.includes(layer.id.slice(0, 26))) return; // layer does not start with selected ulid
+        savedLayers.push(layer);
+        savedSources.push([layer.id, map.getSource(layer.source).serialize()]);
+        map.removeLayer(layer.source);
+        map.removeSource(layer.source);
+        // console.log(map.getSource(layer.source));
+        // cb(layer);
+    });
+    console.log(savedLayers.length + " layers copied");
+    */
+    /*
+    var temp_move_lines = [];
+    var temp_pause_lines = [];
+    var temp_uned_pause_lines = [];
+*/
+
+    for await (u of selected_rows) {
+        console.log('remove');
+        removeMove(u);
+        removePause(u);
+        removePauseUned(u);
+        console.log('remove finished');
+        // map.removeLayer(u + ' uned-pause-line')
+    }
+
+/*
+    for (ulid of selected_rows) {
+        removeMove(ulid);
+        removePause(ulid);
+        removePauseUned(ulid);
+        removeTrackIcons(ulid);
+    }*/
     if (document.getElementById('satellite').innerHTML === 'satellite') {
         map.setStyle('https://api.maptiler.com/maps/hybrid/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL');
+        console.log('set style');
         document.getElementById('satellite').innerHTML = 'vector';
     } else {
         map.setStyle('maplibre-gl@2.1.9/style/normal.json');
         document.getElementById('satellite').innerHTML = 'satellite';
     }
+
+    setTimeout(function() {
+        for ([u, geom] of curr_move_line) {
+            console.log("add move");
+            addMove(u, geom);
+        }
+        for ([u, geom] of curr_pause_line) {
+            console.log('add pause');
+            addPause(u, geom);
+        }
+        for ([u, geom] of curr_uned_pause_line) {
+            console.log('add uned pause');
+            addUnedPause(u, geom);
+        }
+    }, 100);
+    
+    map.getStyle().layers.forEach((layer) => {
+        if (!selected_rows.includes(layer.id.slice(0, 26))) return; // layer does not start with selected ulid
+        console.log(layer.source);
+    });
+    /*
+    Object.keys(curr_move_line).forEach((k, v) => {
+        console.log(v)
+        addMove(k, v);
+    });
+    Object.keys(curr_pause_line).forEach((k, v) => {
+        addPause(k, v);
+    });
+    Object.keys(curr_uned_pause_line).forEach((k, v) => {
+        addUnedPause(k, v);
+    })*/
+
+    /*
+    for (var i = 0; i < temp_move_lines.length; i++) {
+        console.log(temp_move_lines[0]);
+        addMove(temp_move_lines[i][0], temp_move_lines[i][1]);
+        addMove(temp_pause_lines[i][0], temp_pause_lines[i][1]);
+        addMove(temp_uned_pause_lines[i][0], temp_uned_pause_lines[i][1]);
+    }*/
+/*
+    savedSources.forEach(([id, source]) => {
+        map.addSource(id, source);
+    });
+    savedLayers.forEach(layer => {
+        map.addLayer(layer);
+    });
+    console.log('changed');*/
+    // switchBaseMap(map, 'https://api.maptiler.com/maps/hybrid/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL');
+}
+
+async function switchBaseMap(map, styleID) {
+    const response = await fetch(styleID);
+    const responseJson = await response.json();
+    const newStyle = responseJson;
+  
+    const currentStyle = map.getStyle();
+    // ensure any sources from the current style are copied across to the new style
+    newStyle.sources = Object.assign({},
+        currentStyle.sources,
+        newStyle.sources
+    );
+  
+    // find the index of where to insert our layers to retain in the new style
+    let labelIndex = newStyle.layers.findIndex((el) => {
+        return false;
+        return el.id == 'waterway-label';
+    });
+  
+    // default to on top
+    if (labelIndex === -1) {
+        labelIndex = newStyle.layers.length;
+    }  
+    const appLayers = currentStyle.layers.filter((el) => {
+      // app layers are the layers to retain, and these are any layers which have a different source set
+        return (
+            el.source &&
+            el.source != 'mapbox://mapbox.satellite' &&
+            el.source != 'mapbox' &&
+            el.source != 'composite'
+        );
+    });
+    newStyle.layers = [
+        ...newStyle.layers.slice(0, labelIndex),
+        ...appLayers,
+        ...newStyle.layers.slice(labelIndex, -1),
+    ];
+    map.setStyle(newStyle);
 }
