@@ -13,6 +13,7 @@ function init_map() {
     map.touchZoomRotate.disableRotation();
     map.addControl(new maplibregl.NavigationControl());
     map.on('load', function () {
+        addMapPositionIcon();
     });
 }
 
@@ -199,7 +200,7 @@ function addPauseIcons(entry, pauses) {
         } else if (p.duration_sec > 3600) { // Pause was longer than 1 hour
             size = 20;
         }
-        el.style.backgroundImage = "url('icons/pause-button2.png')"
+        el.style.backgroundImage = "url('icons/pause-button2.png')";
         el.style.width = size + 'px';
         el.style.height = size + 'px';
             
@@ -207,7 +208,7 @@ function addPauseIcons(entry, pauses) {
         date.setSeconds(p.duration_sec); // specify value for SECONDS here
         var timeString = date.toISOString().substr(11, 8);
         el.addEventListener('click', function () {
-        window.alert(timeString);
+            window.alert(timeString);
         });
             
         // add marker to map
@@ -238,51 +239,19 @@ function removeTrack(ulid) {
     }
 }
 
-function setSatelliteStyle() {
-    
-}
-
-async function setSatelliteStyle() {
-    
-    /*
-    let savedLayers = [];
-    let savedSources = [];
-    map.getStyle().layers.forEach((layer) => {
-        if (!selected_rows.includes(layer.id.slice(0, 26))) return; // layer does not start with selected ulid
-        savedLayers.push(layer);
-        savedSources.push([layer.id, map.getSource(layer.source).serialize()]);
-        map.removeLayer(layer.source);
-        map.removeSource(layer.source);
-        // console.log(map.getSource(layer.source));
-        // cb(layer);
-    });
-    console.log(savedLayers.length + " layers copied");
-    */
-    /*
-    var temp_move_lines = [];
-    var temp_pause_lines = [];
-    var temp_uned_pause_lines = [];
-*/
-
-    for await (u of selected_rows) {
-        console.log('remove');
+function toggleMapStyle() {
+    for (u of selected_rows) {
         removeMove(u);
         removePause(u);
         removePauseUned(u);
-        console.log('remove finished');
-        // map.removeLayer(u + ' uned-pause-line')
     }
 
-/*
-    for (ulid of selected_rows) {
-        removeMove(ulid);
-        removePause(ulid);
-        removePauseUned(ulid);
-        removeTrackIcons(ulid);
-    }*/
+    // Setting the style of the map removes all layers (including user created ones).
+    // Therefore user layers have to be added again after style change.
+    // The timeout quick-fixes a problem where the layers are added again before
+    // the style change removes them (asynchronosity).
     if (document.getElementById('satellite').innerHTML === 'satellite') {
         map.setStyle('https://api.maptiler.com/maps/hybrid/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL');
-        console.log('set style');
         document.getElementById('satellite').innerHTML = 'vector';
     } else {
         map.setStyle('maplibre-gl@2.1.9/style/normal.json');
@@ -302,40 +271,7 @@ async function setSatelliteStyle() {
             console.log('add uned pause');
             addUnedPause(u, geom);
         }
-    }, 100);
-    
-    map.getStyle().layers.forEach((layer) => {
-        if (!selected_rows.includes(layer.id.slice(0, 26))) return; // layer does not start with selected ulid
-        console.log(layer.source);
-    });
-    /*
-    Object.keys(curr_move_line).forEach((k, v) => {
-        console.log(v)
-        addMove(k, v);
-    });
-    Object.keys(curr_pause_line).forEach((k, v) => {
-        addPause(k, v);
-    });
-    Object.keys(curr_uned_pause_line).forEach((k, v) => {
-        addUnedPause(k, v);
-    })*/
-
-    /*
-    for (var i = 0; i < temp_move_lines.length; i++) {
-        console.log(temp_move_lines[0]);
-        addMove(temp_move_lines[i][0], temp_move_lines[i][1]);
-        addMove(temp_pause_lines[i][0], temp_pause_lines[i][1]);
-        addMove(temp_uned_pause_lines[i][0], temp_uned_pause_lines[i][1]);
-    }*/
-/*
-    savedSources.forEach(([id, source]) => {
-        map.addSource(id, source);
-    });
-    savedLayers.forEach(layer => {
-        map.addLayer(layer);
-    });
-    console.log('changed');*/
-    // switchBaseMap(map, 'https://api.maptiler.com/maps/hybrid/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL');
+    }, 150);
 }
 
 async function switchBaseMap(map, styleID) {
@@ -375,4 +311,27 @@ async function switchBaseMap(map, styleID) {
         ...newStyle.layers.slice(labelIndex, -1),
     ];
     map.setStyle(newStyle);
+}
+
+var mapPositionIcon;
+var showMapPositionIcon = true;
+var moveMapPositionIcon = true;
+function addMapPositionIcon() {
+    var el = document.createElement('div');
+    el.className = 'map-position-icon';
+
+    var size = 15;
+    el.style.backgroundImage = "url('icons/map-position-icon.png')";
+    el.style.width = size + 'px';
+    el.style.height = size + 'px';
+    el.style.display = "none";
+
+    mapPositionIcon = new maplibregl.Marker(el)
+        .setLngLat([0, 0])
+        .addTo(map);
+}
+
+function updateMapPositionIcon(long, lat) {
+    // mapPositionIcon.getElement().style.display = "block";
+    mapPositionIcon.setLngLat(new maplibregl.LngLat(long, lat));
 }

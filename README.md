@@ -27,6 +27,7 @@ Tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] add group tags (italy summer 2022, to amsterdam 2017, training for marathon 2024, swiss loppet, ...)
 - [ ] add weather tags (sunny, cloudy, rainy, stormy, ...)
 - [ ] add infobox to ui elements and attributes (e.g. explain pause / elevation / distance calculation, ...)
+- [x] add label on map for current position in profile
 - [x] add satellite map option
 
 ## More Distant Future Features
@@ -58,7 +59,11 @@ Tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] Map does not appear when reconnected to internet
 - [ ] When changes to a row are saved, the updated row is not visually selected anymore
 - [ ] very scattered elevation data still leads to inaccurate calculations
-- [ ] pauses between only 2 points can be missed
+
+- [ ] improve pause detection (pauses between only 2 points can be missed)
+
+- [ ] fix elevation not until end of track
+- [ ] fix unrealistic elevation correction
 
 ## Sources
 Geotiff: https://srtm.csi.cgiar.org/wp-content/uploads/files/srtm_5x5/TIFF/

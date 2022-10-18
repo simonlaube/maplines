@@ -88,14 +88,14 @@ impl TrackAnalysis {
             None => Ulid::from_datetime(start_time.into()).to_string(),
         };
 
-        let (ele, ele_gain, ele_loss, ele_max, ele_min) = match elevation::from_latlong(gpx, &pauses) {
+        let (ele, ele_gain, ele_loss, ele_max, ele_min, coords) = match elevation::from_latlong(gpx, &pauses) {
             Ok(e) => e,
             Err(e) => {
                 println!("{:?}", e);
-                (vec![], 0., 0., 0., 0.)
+                (vec![], 0., 0., 0., 0., vec![])
             }
         };
-        io::write_elevation(ele, &ulid);
+        io::write_elevation(ele, coords, &ulid);
 
         TrackAnalysis {
             version: crate::ANALYSIS_VERSION,

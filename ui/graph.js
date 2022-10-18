@@ -12,6 +12,37 @@ var elevationGraph = new Dygraph(
     }
 );
 elevationGraph.resize();
+
+document.getElementById('elevation-graph').onclick = function(e) {
+    if (moveMapPositionIcon) {
+        moveMapPositionIcon = false;
+    } else {
+        moveMapPositionIcon = true;
+    }
+}
+
+document.getElementById('elevation-graph').onmouseenter = function(e) {
+    mapPositionIcon.getElement().style.display = "";
+    showMapPositionIcon = true;
+    moveMapPositionIcon = true;
+}
+document.getElementById('elevation-graph').onmousemove = function(e) {
+    let pos = elevationGraph.getSelection();
+    if (showMapPositionIcon && moveMapPositionIcon && pos !== -1) {
+        let long = elevationCoords[selected_rows[0]][pos][0];
+        let lat = elevationCoords[selected_rows[0]][pos][1];
+        console.log(long + " : " + lat);
+        updateMapPositionIcon(long, lat);
+    }
+}
+// elevationGraph.on('mouseover', console.log("over graph"));
+/*
+elevationGraph.on('mousemove', function() {
+    let long = elevationCoords[selected_rows[0]][1];
+    let lat = elevationCoords[selected_rows[0]][0];
+    showMapPositionIcon(long, lat);
+    console.log(lat + " : " + long);
+});*/
 /*
 const ctx = document.getElementById('elevation-chart').getContext("2d");
 var labels = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];

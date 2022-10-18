@@ -83,42 +83,52 @@ fn find_clusters(gpx: &Gpx) -> Vec<Pause> {
         let start_time = OffsetDateTime::from(gpx.tracks[0].segments[0].points[pos].time.unwrap()).unix_timestamp();
         let mut current_cluster: Vec<&Waypoint> = vec![];
         for q in gpx.tracks[0].segments[0].points[pos..].iter() {
-            if start_point.haversine_distance(&q.point().into()) < SCATTER_RADIUS || current_cluster.len() < 2 {
+            if q == gpx.tracks[0].segments[0].points.last().unwrap() {
                 current_cluster.push(q);
-            } else {
-                let current_time_in_radius = OffsetDateTime::from(q.time.unwrap()).unix_timestamp() - start_time;
-                let (index, current_center) = point_closest_to_center(&current_cluster);
-                // check if more time was spent in the current radius than in the last
-                if current_time_in_radius > time_in_radius {
-                    time_in_radius = current_time_in_radius;
-                    center = current_center;
-                    cluster = current_cluster;
-                    cluster_index = pos;
-                    pos += index; // This loses time spent until index (CHECK THIS!!!)
-                    detection_completed = false;
-                    break;
-                // check if last cluster was pause or not and continue
-                } else {
-                    if time_in_radius > MIN_CLUSTER_TIME {
-                        match trim_cluster(&cluster, &center) {
-                            Some((mut start_index, mut end_index, c)) => {
-                                start_index += cluster_index;
-                                end_index += cluster_index;
-                                let time = OffsetDateTime::from(c.last().unwrap().time.unwrap()).unix_timestamp() - OffsetDateTime::from(c.first().unwrap().time.unwrap()).unix_timestamp();
-                                result.push(Pause::new(c.first().unwrap().point().into(), start_index, c.last().unwrap().point().into(), end_index, time as u64));
-                            },
-                            None => (),
-                        };
-                    }
-                    pos += current_cluster.len();
-                    time_in_radius = 0;
-                    detection_completed = false;
-                    cluster = vec![];
-                    break;
+            } else if start_point.haversine_distance(&q.point().into()) < SCATTER_RADIUS || current_cluster.len() < 2 {
+                current_cluster.push(q);
+                if q == gpx.tracks[0].segments[0].points.last().unwrap() {
+                    println!("clust is not yet added. length: {}", current_cluster.len());
                 }
+                continue;
+            }
+            let current_time_in_radius = OffsetDateTime::from(q.time.unwrap()).unix_timestamp() - start_time;
+            let (index, current_center) = point_closest_to_center(&current_cluster);
+            // check if more time was spent in the current radius than in the last
+            if current_time_in_radius > time_in_radius {
+                time_in_radius = current_time_in_radius;
+                center = current_center;
+                cluster = current_cluster;
+                cluster_index = pos;
+                pos += index; // This loses time spent until index (CHECK THIS!!!)
+                if q != gpx.tracks[0].segments[0].points.last().unwrap() {
+                    detection_completed = false;
+                }
+                break;
+            // check if last cluster was pause or not and continue
+            } else {
+                if time_in_radius > MIN_CLUSTER_TIME {
+                    match trim_cluster(&cluster, &center) {
+                        Some((mut start_index, mut end_index, c)) => {
+                            start_index += cluster_index;
+                            end_index += cluster_index;
+                            let time = OffsetDateTime::from(c.last().unwrap().time.unwrap()).unix_timestamp() - OffsetDateTime::from(c.first().unwrap().time.unwrap()).unix_timestamp();
+                            result.push(Pause::new(c.first().unwrap().point().into(), start_index, c.last().unwrap().point().into(), end_index, time as u64));
+                        },
+                        None => (),
+                    };
+                }
+                pos += current_cluster.len();
+                time_in_radius = 0;
+                if q != gpx.tracks[0].segments[0].points.last().unwrap() {
+                    detection_completed = false;
+                }
+                cluster = vec![];
+                break;
             }
         }
     }
+    println!("result: {:?}", result);
     result
 }
 

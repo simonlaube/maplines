@@ -6,6 +6,7 @@ var map;
 var table_body;
 var row_objects;
 var selected_rows;
+var elevationCoords = {};
 
 const DisplayState = {
     Table: 'Table',
@@ -266,8 +267,10 @@ function toggleRowSelection(entry) {
             if (response == null) {
                 // ERROR HANDLING
             } else {
-                updateGraph(response);
-                // addData(response[1]);
+                updateGraph(response[0]);
+                elevationCoords[entry.ulid] = response[1];
+                mapPositionIcon.getElement().style.display = "none";
+                showMapPositionIcon = false;
             }
         });
 

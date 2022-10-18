@@ -203,7 +203,7 @@ fn load_track_display_data(ulid: String) -> Option<(Vec<Pause>, GeoJson)> {
 }
 
 #[tauri::command]
-fn load_elevation(ulid: String) -> Option<(Vec<(f64, f64)>)> {
+fn load_elevation(ulid: String) -> Option<(Vec<(f64, f64)>, Vec<(f64, f64)>)> {
   if paths::track_elevation(&ulid).exists() {
     return Some(io::read_elevation(&ulid).unwrap());
   }

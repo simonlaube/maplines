@@ -172,14 +172,20 @@ function allInputsValid() {
 }
 
 function joinRows() {
+    var pos = 0;
+    document.getElementById('loading-bar').style.width = "0%";
+    document.getElementById('loading-text').innerHTML = "joining tracks...";
+    setLoadingInfoOverlay();
     invoke('join_tracks', { ulids: selected_rows })
     .then(response => {
         reload_table();
+        setNoOverlay();
     })
 }
 
 async function recalculateRows() {
     var pos = 0;
+    document.getElementById('loading-bar').style.width = "0%";
     document.getElementById('loading-text').innerHTML = "calculating... (" + pos + " / " + selected_rows.length + ")";
     setLoadingInfoOverlay();
     for (ulid of selected_rows) {
@@ -188,17 +194,26 @@ async function recalculateRows() {
             pos += 1;
             document.getElementById('loading-text').innerHTML = "calculating... (" + pos + " / " + selected_rows.length + ")";
             document.getElementById('loading-bar').style.width = pos / selected_rows.length * 100 + "%";
-        })
+        });
     }
     reload_table();
     setNoOverlay();
-    document.getElementById('loading-bar').style.width = "0%";
 }
 
 function deleteEditRow() {
+    var pos = 0;
+    document.getElementById('loading-bar').style.width = "0%";
+    document.getElementById('loading-text').innerHTML = "deleting... (" + pos + " / " + selected_rows.length + ")";
+    setLoadingInfoOverlay();
     for (r of selected_rows) {
-        invoke('delete_track', { ulid : r });
-        removeTrack(row_objects[r]);
+        invoke('delete_track', { ulid : r })
+        .then(response => {
+            removeTrack(r)
+            delete elevationCoords[r];
+            pos += 1;
+            document.getElementById('loading-text').innerHTML = "calculating... (" + pos + " / " + selected_rows.length + ")";
+            document.getElementById('loading-bar').style.width = pos / selected_rows.length * 100 + "%";
+        });
     }
     reload_table();
     setNoOverlay();

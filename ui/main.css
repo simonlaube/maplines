@@ -333,6 +333,11 @@ tbody tr:hover td {
     cursor: pointer;
 }
 
+.map-position-icon {
+    background-size: cover;
+    z-index: 10;
+}
+
 #overlay {
     background-color: rgba(0,0,0,0.5);;
     display: none;

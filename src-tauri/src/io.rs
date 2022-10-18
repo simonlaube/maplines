@@ -42,16 +42,17 @@ pub fn read_track_analysis(ulid: &String) -> Result<TrackAnalysis, io::Error> {
     Ok(ta)
 }
 
-pub fn read_elevation(ulid: &str) -> Result<Vec<(f64, f64)>, io::Error> {
+pub fn read_elevation(ulid: &str) -> Result<(Vec<(f64, f64)>, Vec<(f64, f64)>), io::Error> {
     let path = paths::track_elevation(ulid);
     let json_string = fs::read_to_string(path)?;
-    let elevation: Vec<(f64, f64)> = serde_json::from_str(&json_string.as_str())?;
-    Ok(elevation)
+    let _in: Vec<Vec<(f64, f64)>> = serde_json::from_str(&json_string.as_str())?;
+    let (elevation, coords) = (_in[0].clone(), _in[1].clone());
+    Ok((elevation, coords))
 }
 
-pub fn write_elevation(elevation: Vec<(f64, f64)>, ulid: &str) -> Result<(), io::Error> {
+pub fn write_elevation(elevation: Vec<(f64, f64)>, coords: Vec<(f64, f64)>, ulid: &str) -> Result<(), io::Error> {
     let path = paths::track_elevation(ulid);
-    write_file(path, serde_json::to_string(&elevation)?)?;
+    write_file(path, serde_json::to_string(&vec![elevation, coords])?);
     Ok(())
 }
 
