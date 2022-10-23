@@ -130,10 +130,16 @@ pub fn from_latlong(gpx: &Gpx, pauses: &Vec<Pause>) -> Result<(Vec<(f64, f64)>, 
                 let mut ele_12 = tile.get_value_at(rel_lon as usize, rel_lat_2 as usize) as f64;
                 let mut ele_22 = tile.get_value_at(rel_lon_2 as usize, rel_lat_2 as usize) as f64;
                 if (ele_11 - ele_21).abs() > 2000. || (ele_12 - ele_22).abs() > 2000. || (ele_11 - ele_22).abs() > 2000. {
-                    ele_11 = 0.;
-                    ele_21 = 0.;
-                    ele_12 = 0.;
-                    ele_22 = 0.;
+                    let mut min = ele_11; // take min value instead of 0
+                    for e in [ele_21, ele_12, ele_22] {
+                        if e < min {
+                            min = e;
+                        }
+                    }
+                    ele_11 = min;
+                    ele_21 = min;
+                    ele_12 = min;
+                    ele_22 = min;
                 }
 
                 current_ele = (ele_11 * (1. - x_weight) + ele_21 * x_weight) * (1. - y_weight) + (ele_12 * (1. - x_weight) + ele_22 * x_weight) * y_weight;
