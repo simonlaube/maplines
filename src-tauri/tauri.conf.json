@@ -16,6 +16,22 @@
         "all": true,
         "open": true,
         "save": true
+      },
+      "fs": {
+        "writeFile": true,
+        "removeFile": true,
+        "readFile": true,
+        "scope": ["$DOCUMENT/*", "$DESKTOP/*"]
+      },
+      "path": {
+        "all": true
+      },
+      "http": {
+        "all": true
+      },
+      "protocol": {
+        "asset": true,
+        "assetScope": ["$DESKTOP/*"]
       }
     },
     "bundle": {

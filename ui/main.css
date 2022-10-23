@@ -357,6 +357,25 @@ tbody tr:hover td {
     padding: 1rem;
     display: none;
 }
+#track-note-edit {
+    width: 80%;
+    height: 80%;
+    background-color: #fff;
+    display: none;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+}
+#edit-note-vbox {
+    display: grid;
+    grid-auto-rows: 40% 20% 25% auto;
+    width: 100%;
+    height: 100%;
+}
+#comment-input {
+    width: 100%;
+    height: 100%;
+}
 #loading-info {
     width: 180px;
     height: 25px;
@@ -364,6 +383,17 @@ tbody tr:hover td {
     display: none;
     position: relative;
     border-radius: 5px;
+}
+#img-drop {
+    background-color: #333;
+    /*background-image: url('Users/simonlaube/Downloads/IMG_2853.JPG');*/
+    height: 100%;
+    width: 100%;
+}
+#note-img {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
 }
 #loading-text {
     position: absolute;
@@ -425,3 +455,10 @@ select {
     height: 100%;
     line-height: 3;
  }
+
+ .dygraph-legend {
+    text-align: right;
+  }
+  .dygraph-legend:hover {
+    display: none;
+  }

@@ -27,6 +27,7 @@ Tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] add group tags (italy summer 2022, to amsterdam 2017, training for marathon 2024, swiss loppet, ...)
 - [ ] add weather tags (sunny, cloudy, rainy, stormy, ...)
 - [ ] add infobox to ui elements and attributes (e.g. explain pause / elevation / distance calculation, ...)
+- [ ] add table filters
 - [x] add label on map for current position in profile
 - [x] add satellite map option
 
@@ -62,7 +63,6 @@ Tool to analyze and visualize GPS data from recorded sport activities.
 
 - [ ] improve pause detection (pauses between only 2 points can be missed)
 
-- [ ] fix elevation not until end of track
 - [ ] fix unrealistic elevation correction
 
 ## Sources

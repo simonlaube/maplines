@@ -130,14 +130,13 @@ impl TrackAnalysis {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Activity {
-    CrossCountrySkiing,
+    XCSkiing,
     Cycling,
-    Generic, // default value
     Hiking,
     InlineSkating,
     Running,
     Swimming,
-    UserDefined,
+    Other, // Default Value
 }
 
 fn activity_type_from_track(track: &Track) -> Activity {
@@ -148,11 +147,11 @@ fn activity_type_from_track(track: &Track) -> Activity {
                 "1" => Activity::Cycling,
                 "4" => Activity::Hiking,
                 "6" => Activity::InlineSkating,
-                "7" => Activity::CrossCountrySkiing,
+                "7" => Activity::XCSkiing,
                 "9" => Activity::Running,
                 "10" => Activity::Hiking, // walk
                 "16" => Activity::Swimming,
-                _ => Activity::Generic,
+                _ => Activity::Other,
                 /*
                     1: Ride
                     2: Alpine Ski
@@ -190,19 +189,18 @@ fn activity_type_from_track(track: &Track) -> Activity {
                  */
             }
         }
-        None => Activity::Generic
+        None => Activity::Other
     }
 }
 
 pub fn activity_type_from_string(activity: &String) -> Activity {
     match activity.to_lowercase().as_str() {
-        "crosscountryskiing" => Activity::CrossCountrySkiing,
+        "xcskiing" => Activity::XCSkiing,
         "cycling" => Activity::Cycling,
-        "generic" => Activity::Generic, // default value
         "hiking" => Activity::Hiking,
         "inlineskating" => Activity::InlineSkating,
         "running" => Activity::Running,
         "swimming" => Activity::Swimming,
-        _ => Activity::UserDefined,
+        _ => Activity::Other,
     }
 }

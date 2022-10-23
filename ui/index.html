@@ -12,6 +12,7 @@
     <script type="text/javascript" src="main.js"></script>
     <script type="text/javascript" src="map.js"></script>
     <script type="text/javascript" src="editRow.js"></script>
+    <script type="text/javascript" src="editNote.js"></script>
     <link rel="stylesheet" href="main.css">
 
     <script src="maplibre-gl@2.1.9/dist/maplibre-gl.js"></script>
@@ -26,6 +27,7 @@
           <button id="table-button-edit" onclick="editRow()">Edit</button>
           <button id="table-button-join" onclick="joinRows()">Join</button>
           <button id="table-button-recalculate" onclick="recalculateRows()">Recalculate</button>
+          <button id="table-button-join" onclick="setEditNoteOverlay()">temp note overlay</button>
         </div>
         <div id="display-buttons-wrapper">
           <button id="table-only" onclick="setDisplayState(DisplayState.Table)">|==|</button>
@@ -48,13 +50,13 @@
               <!--input class="input-field" id="activity-input" type="text" onblur="checkInput('activity')" onfocus="focusInput('activity')"-->
               <form id="activity-form">
                 <select id = "activity-input" oninput="checkInput('activity')">
-                   <option value = "CrossCountrySkiing" selected>Cross Country Skiing</option>
+                   <option value = "XCSkiing" selected>XCSkiing</option>
                    <option value = "Cycling">Cycling</option>
-                   <option value = "Generic">Generic</option>
                    <option value = "Hiking">Hiking</option>
                    <option value = "InlineSkating">Inline Skating</option>
                    <option value = "Running">Running</option>
                    <option value = "Swimming">Swimming</option>
+                   <option value = "Other">Other</option>
                 </select>
              </form>
             </div>
@@ -65,6 +67,18 @@
             <button id="cancel-row-edit" onclick="cancelEditRow()">Cancel</button>
             <button id="save-row-edit" onclick="saveEditRow()">Save</button>
             <button id="delete-row-edit" onclick="deleteEditRow()">Delete</button>
+          </div>
+          <div id="track-note-edit">
+            <div id="edit-note-vbox">
+            <!--p class="text-title">Comment:</p-->
+              <textarea class="input-field" id="comment-input" type="text"></textarea>
+              <input id="img-drop" type="file" accept="image/png, image/jpeg" ondragover="dragOverHandler(event)" ondragleave="dragLeaveHandler(event)" onmouseenter="imgDropEnter()" onmouseleave="imgDropLeave()">
+              <img id="note-img"/>
+              <div>
+                <button id="cancel-note-edit" onclick="setNoOverlay()">Cancel</button>
+                <button id="save-note-edit" onclick="saveEditNote()">Save</button>
+              </div>
+            </div>
           </div>
           <div id="loading-info">
             <div id="loading-bar"></div>

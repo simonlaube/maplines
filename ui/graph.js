@@ -13,28 +13,6 @@ var elevationGraph = new Dygraph(
 );
 elevationGraph.resize();
 
-document.getElementById('elevation-graph').onclick = function(e) {
-    if (moveMapPositionIcon) {
-        moveMapPositionIcon = false;
-    } else {
-        moveMapPositionIcon = true;
-    }
-}
-
-document.getElementById('elevation-graph').onmouseenter = function(e) {
-    mapPositionIcon.getElement().style.display = "";
-    showMapPositionIcon = true;
-    moveMapPositionIcon = true;
-}
-document.getElementById('elevation-graph').onmousemove = function(e) {
-    let pos = elevationGraph.getSelection();
-    if (showMapPositionIcon && moveMapPositionIcon && pos !== -1) {
-        let long = elevationCoords[selected_rows[0]][pos][0];
-        let lat = elevationCoords[selected_rows[0]][pos][1];
-        console.log(long + " : " + lat);
-        updateMapPositionIcon(long, lat);
-    }
-}
 // elevationGraph.on('mouseover', console.log("over graph"));
 /*
 elevationGraph.on('mousemove', function() {

@@ -24,6 +24,7 @@ mod import;
 mod io;
 mod geotiff;
 mod track_analysis;
+mod track_note;
 mod line;
 mod paths;
 mod pause;
@@ -41,6 +42,8 @@ use track_analysis::TrackAnalysis;
 use settings::Settings;
 use tauri::api::{dialog};
 use tauri::{CustomMenuItem, Menu, Submenu};
+use track_note::TrackNote;
+use ulid::Ulid;
 
 const ANALYSIS_VERSION: i32 = 1;
 const SETTINGS_VERSION: i32 = 1;
@@ -132,7 +135,7 @@ fn main() {
       }
       _ => {}
     })
-    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses, load_track_display_data, save_track_changes, load_elevation, join_tracks, delete_track, recalculate_track])
+    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses, load_track_display_data, save_track_changes, load_elevation, load_notes, join_tracks, delete_track, recalculate_track])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 
@@ -211,12 +214,41 @@ fn load_elevation(ulid: String) -> Option<(Vec<(f64, f64)>, Vec<(f64, f64)>)> {
 }
 
 #[tauri::command]
+fn load_notes(ulid: String) -> Option<Vec<TrackNote>> {
+  io::read_track_notes(&ulid)
+}
+
+#[tauri::command]
+fn add_note(ulid: String, coord: (f64, f64), icon: String, comment: Option<String>, img_path: Option<String>) {
+  let new_note = TrackNote {
+    id: Ulid::new().to_string(), // no time associated with note
+    coord,
+    icon: track_note::get_icon_from_string(icon),
+    comment,
+    picture: match img_path {
+      Some(s) => Some(PathBuf::from(s)),
+      None => None,
+    }
+  };
+
+  let mut notes;
+  match io::read_track_notes(&ulid) {
+    Some(n) => {
+      notes = n;
+      notes.push(new_note);
+    },
+    None => notes = vec![new_note],
+  }
+  io::write_track_notes(notes, &ulid).unwrap();
+}
+
+#[tauri::command]
 fn save_track_changes(ulid: String, name: String, activity: String) {
   println!("{}", activity);
   let mut track_analysis = io::read_track_analysis(&ulid).unwrap();
   track_analysis.name = Some(name.clone());
   track_analysis._type = track_analysis::activity_type_from_string(&activity);
-  io::write_track_analysis(&track_analysis);
+  io::write_track_analysis(&track_analysis).unwrap();
   // gpx writing takes longer and is therefore handled in separate thread
   std::thread::spawn(move || {
     println!("{} : {} : {}", ulid, name, activity);
@@ -229,7 +261,7 @@ fn save_track_changes(ulid: String, name: String, activity: String) {
 #[tauri::command]
 fn delete_track(ulid: String) {
   // println!("remove {:?}", paths::track(ulid));
-  std::fs::remove_dir_all(paths::track(ulid));
+  std::fs::remove_dir_all(paths::track(&ulid));
 }
 
 #[tauri::command]

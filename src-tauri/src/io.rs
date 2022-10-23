@@ -7,7 +7,7 @@ use gpx::{Gpx, read};
 use tokio;
 use serde_json;
 
-use crate::{paths, track_analysis::TrackAnalysis};
+use crate::{paths, track_analysis::TrackAnalysis, track_note::TrackNote};
 
 pub fn read_geojson(ulid: &String) -> Option<GeoJson> {
     let path = paths::track_geojson(ulid);
@@ -50,9 +50,29 @@ pub fn read_elevation(ulid: &str) -> Result<(Vec<(f64, f64)>, Vec<(f64, f64)>), 
     Ok((elevation, coords))
 }
 
+pub fn read_track_notes(ulid: &str) -> Option<Vec<TrackNote>> {
+    let path = paths::track_notes(ulid);
+    match fs::read_to_string(path) {
+        Ok(s) => {
+            let notes = serde_json::from_str(&s.as_str()).unwrap();
+            return Some(notes)
+        }
+        Err(e) => {
+            println!("No track notes read for {}:\n{}", ulid, e);
+            return None
+        }
+    }
+}
+
 pub fn write_elevation(elevation: Vec<(f64, f64)>, coords: Vec<(f64, f64)>, ulid: &str) -> Result<(), io::Error> {
     let path = paths::track_elevation(ulid);
-    write_file(path, serde_json::to_string(&vec![elevation, coords])?);
+    write_file(path, serde_json::to_string(&vec![elevation, coords])?).unwrap();
+    Ok(())
+}
+
+pub fn write_track_notes(notes: Vec<TrackNote>, ulid: &str) -> Result<(), io::Error> {
+    let path = paths::track_notes(ulid);
+    write_file(path, serde_json::to_string(&notes)?).unwrap();
     Ok(())
 }
 

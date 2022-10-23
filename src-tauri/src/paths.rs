@@ -13,39 +13,41 @@ pub fn tracks() -> PathBuf {
     tracks_path
 }
 
-pub fn track(ulid: String) -> PathBuf {
-    let mut track_path = maplines();
-    track_path.push("tracks");
+pub fn track(ulid: &str) -> PathBuf {
+    let mut track_path = tracks();
     track_path.push(ulid);
     track_path
 }
 
 pub fn track_analysis(ulid: &str) -> PathBuf {
-    let mut track_analysis = tracks();
-    track_analysis.push(ulid);
+    let mut track_analysis = track(ulid);
     track_analysis.push("analysis.json");
     track_analysis
 }
 
 pub fn track_gpx(ulid: &str) -> PathBuf {
-    let mut gpx_path = tracks();
-    gpx_path.push(ulid);
+    let mut gpx_path = track(ulid);
     gpx_path.push("record.gpx");
     gpx_path
 }
 
 pub fn track_geojson(ulid: &str) -> PathBuf {
-    let mut geojson_path = tracks();
-    geojson_path.push(ulid);
+    let mut geojson_path = track(ulid);
     geojson_path.push("geometries.geojson");
     geojson_path
 }
 
 pub fn track_elevation(ulid: &str) -> PathBuf {
-    let mut elevation_path = tracks();
-    elevation_path.push(ulid);
+    let mut elevation_path = track(ulid);
     elevation_path.push("elevation.json");
     elevation_path
+}
+
+pub fn track_notes(ulid: &str) -> PathBuf {
+    let mut notes_path = track(ulid);
+    notes_path.push("notes");
+    notes_path
+
 }
 
 // Shuttle Radar Topographic Mission

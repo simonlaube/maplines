@@ -80,14 +80,14 @@ function saveEditRow() {
             }
             invoke("save_track_changes", { ulid: u, name: nameUpdate, activity: activityUpdate })
         }
-        reload_table();
+        reloadTable();
         setNoOverlay();
     } else if (selected_rows.length == 1) {
         // check for every entry if input is valid
         let ulid = selected_rows[0];
         invoke("save_track_changes", { ulid: ulid, name: name, activity: activity })
         .then(() => {
-            reload_table();
+            reloadTable();
             var rows = table_body.querySelectorAll("tr");
             rows.forEach(row => {
                 if (row.querySelectorAll("td")[0].innerHTML == ulid) {
@@ -178,7 +178,7 @@ function joinRows() {
     setLoadingInfoOverlay();
     invoke('join_tracks', { ulids: selected_rows })
     .then(response => {
-        reload_table();
+        reloadTable();
         setNoOverlay();
     })
 }
@@ -196,7 +196,7 @@ async function recalculateRows() {
             document.getElementById('loading-bar').style.width = pos / selected_rows.length * 100 + "%";
         });
     }
-    reload_table();
+    reloadTable();
     setNoOverlay();
 }
 
@@ -215,6 +215,6 @@ function deleteEditRow() {
             document.getElementById('loading-bar').style.width = pos / selected_rows.length * 100 + "%";
         });
     }
-    reload_table();
+    reloadTable();
     setNoOverlay();
 }

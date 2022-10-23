@@ -48,7 +48,7 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, MaplineError> {
         Ok(f) => f,
     };
     // import creator and add to gpx
-    let mut activity: Activity = Activity::Generic;
+    let mut activity: Activity = Activity::Other;
     let mut creator: String = "unknown".to_string();
     let mut track_segment = TrackSegment::new();
     let parsed_fit = match fitparser::from_reader(&mut fp) {
@@ -104,15 +104,14 @@ pub fn fit(fit_path: &PathBuf) -> Result<TrackAnalysis, MaplineError> {
                 match f.name() {
                     "sport" => {
                         match f.value().to_string().as_str() {
-                            "cross_country_skiing" => activity = Activity::CrossCountrySkiing, // has to be tested with xc capable device
+                            "xcskiing" => activity = Activity::XCSkiing, // has to be tested with xc capable device
                             "cycling" => activity = Activity::Cycling,
                             "running" => activity = Activity::Running,
                             "hiking" => activity = Activity::Hiking,
                             "walking" => activity = Activity::Hiking, // same activity as hiking
                             "swimming" => activity = Activity::Swimming, // has to be tested with swimming capable device
                             "inline_skating" => activity = Activity::InlineSkating, // has to be tested with is capable device
-                            "generic" => activity = Activity::Generic, // has to be tested
-                            _ => activity = Activity::Generic,
+                            _ => activity = Activity::Other,
                         }
                     }
                     _ => (),

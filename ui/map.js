@@ -1,5 +1,5 @@
 
-function init_map() {
+function initMap() {
     map = new maplibregl.Map({
         container: 'map', // container id
         // style: 'https://demotiles.maplibre.org/style.json', // style URL
@@ -12,9 +12,6 @@ function init_map() {
     map.dragRotate.disable();
     map.touchZoomRotate.disableRotation();
     map.addControl(new maplibregl.NavigationControl());
-    map.on('load', function () {
-        addMapPositionIcon();
-    });
 }
 
 var curr_move_line = [];
@@ -31,7 +28,6 @@ function addTrack(ulid, move, pause, uned_pause) {
 }
 
 function addMove(ulid, geom) {
-    console.log("add source: " + ulid + " gps-line");
     map.addSource(ulid + ' gps-line', {
         'type': 'geojson',
         'data': {
@@ -260,15 +256,12 @@ function toggleMapStyle() {
 
     setTimeout(function() {
         for ([u, geom] of curr_move_line) {
-            console.log("add move");
             addMove(u, geom);
         }
         for ([u, geom] of curr_pause_line) {
-            console.log('add pause');
             addPause(u, geom);
         }
         for ([u, geom] of curr_uned_pause_line) {
-            console.log('add uned pause');
             addUnedPause(u, geom);
         }
     }, 150);
@@ -313,10 +306,10 @@ async function switchBaseMap(map, styleID) {
     map.setStyle(newStyle);
 }
 
-var mapPositionIcon;
 var showMapPositionIcon = true;
-var moveMapPositionIcon = true;
-function addMapPositionIcon() {
+var moveMapPositionIcon = false;
+
+function initMapPositionIcon() {
     var el = document.createElement('div');
     el.className = 'map-position-icon';
 
@@ -329,6 +322,28 @@ function addMapPositionIcon() {
     mapPositionIcon = new maplibregl.Marker(el)
         .setLngLat([0, 0])
         .addTo(map);
+    
+    document.getElementById('elevation-graph').onclick = function(e) {
+        if (moveMapPositionIcon) {
+            moveMapPositionIcon = false;
+        } else {
+            moveMapPositionIcon = true;
+        }
+    }
+
+    document.getElementById('elevation-graph').onmouseenter = function(e) {
+        mapPositionIcon.getElement().style.display = "";
+        showMapPositionIcon = true;
+        moveMapPositionIcon = true;
+    }
+    document.getElementById('elevation-graph').onmousemove = function(e) {
+        let pos = elevationGraph.getSelection();
+        if (showMapPositionIcon && moveMapPositionIcon && pos !== -1 && selected_rows.length > 0) {
+            let long = elevationCoords[selected_rows[0]][pos][0];
+            let lat = elevationCoords[selected_rows[0]][pos][1];
+            updateMapPositionIcon(long, lat);
+        }
+    }
 }
 
 function updateMapPositionIcon(long, lat) {

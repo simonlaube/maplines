@@ -1,8 +1,14 @@
 // access the pre-bundled global API functions
 const invoke = window.__TAURI__.invoke;
 const { emit, listen } = window.__TAURI__.event;
+const { convertFileSrc } = window.__TAURI__.tauri;
+/*
+listen('tauri://file-drop', event => {
+  console.log(event)
+})*/
 
 var map;
+var mapPositionIcon;
 var table_body;
 var row_objects;
 var selected_rows;
@@ -18,6 +24,7 @@ var currentDisplayState = DisplayState.Analysis;
 const OverlayState = {
     None: 'None',
     RowEdit: 'RowEdit',
+    NoteEdit: 'NoteEdit',
     Loading: 'Loading',
     Settings: 'Settings',
 };
@@ -27,8 +34,10 @@ window.onload = init;
 
 function init() {
     initContentResize();
-    reload_table();
-    init_map();
+    reloadTable();
+    initMap();
+    initMapPositionIcon();
+    initDropListener();
     selected_rows = [];
 
     let bTableMap = document.getElementById("table-map");
@@ -62,7 +71,6 @@ function disableSelect(event) {
 }
 
 function startHDrag(event) {
-    console.log("drag start");
     document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "ns-resize";
     document.getElementById('content-wrapper').style.cursor = "ns-resize";
     document.getElementById('elevation-graph').style.cursor = "ns-resize";
@@ -75,7 +83,6 @@ function startHDrag(event) {
 }
 
 function onHDragEnd() {
-    console.log("drag end");
     window.removeEventListener('mouseup', onHDragEnd);
     window.removeEventListener('selectstart', disableSelect);
     window.removeEventListener('mousemove', moveHSeparator);
@@ -87,7 +94,6 @@ function onHDragEnd() {
 }
 
 function moveHSeparator(e) {
-    console.log(e);
     // let percentTop = e.clientY / e.view.innerHeight * 100;
     let percentTop = e.clientY / e.view.innerHeight * 100;
     let content = document.getElementById("content-wrapper");
@@ -96,7 +102,6 @@ function moveHSeparator(e) {
 }
 
 function startVDrag(event) {
-    console.log("drag start");
     document.getElementById('content-wrapper').style.cursor = "ew-resize";
     document.getElementsByClassName('maplibregl-canvas')[0].style.cursor = "ew-resize";
     window.addEventListener('mouseup', onVDragEnd);
@@ -106,7 +111,6 @@ function startVDrag(event) {
 }
 
 function onVDragEnd() {
-    console.log("drag end");
     window.removeEventListener('mouseup', onVDragEnd);
     window.removeEventListener('selectstart', disableSelect);
     window.removeEventListener('mousemove', moveVSeparator);
@@ -118,7 +122,6 @@ function onVDragEnd() {
 
 function moveVSeparator(e) {
     let percentLeft = e.clientX / e.view.innerWidth * 100;
-    console.log(e.clientX);
     let content = document.getElementById("content-wrapper");
     content.style.gridAutoColumns = percentLeft + "% 0.15rem auto";
     map.resize();
@@ -134,7 +137,7 @@ function list_gpx_files() {
         .then((response) => console.log(response));
 }
 
-function reload_table() {
+function reloadTable() {
     table_body = document.getElementById("gpxTableBody");
     row_objects = {};
     invoke('load_track_analysis')
@@ -302,6 +305,7 @@ function setNoOverlay() {
     if (currentOverlayState !== OverlayState.None) {
         currentOverlayState = OverlayState.None;
         deactivateRowEdit();
+        deactivateNoteEdit();
         deactivateLoading();
         // TODO: deactivate all other possible overlay menus
         deactivateOverlay();
@@ -315,6 +319,14 @@ function setEditRowOverlay() {
         // deactivateMenuBar();
         activateOverlay();
         activateRowEdit();
+    }
+}
+
+function setEditNoteOverlay() {
+    if (currentOverlayState === OverlayState.None) {
+        currentOverlayState = OverlayState.NoteEdit;
+        activateOverlay();
+        activateNoteEdit();
     }
 }
 
@@ -380,6 +392,16 @@ function activateRowEdit() {
 
 function deactivateRowEdit() {
     let rowEdit = document.getElementById('row-edit');
+    rowEdit.style.display = "";
+}
+
+function activateNoteEdit() {
+    let noteEdit = document.getElementById('track-note-edit');
+    noteEdit.style.display = "flex";
+}
+
+function deactivateNoteEdit() {
+    let rowEdit = document.getElementById('track-note-edit');
     rowEdit.style.display = "";
 }
 
