@@ -31,6 +31,20 @@
     font-style: normal;
 }
 
+@font-face {
+    font-family: 'Poe-Vetica-Monospace';
+    src: url('fonts/poe-vetica-monospace/PoeVeticaMonospace-6B7Y.ttf') format('truetype');
+    font-weight: bolder;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Noto-Mono';
+    src: url('fonts/noto-mono/NotoMono-Regular.ttf') format('truetype');
+    font-weight: bolder;
+    font-style: normal;
+}
+
 h1 {
     font-family: 'Epilogue';
     font-size:medium;
@@ -251,19 +265,27 @@ body {
 }
 */
 
+.col-title-left {
+    text-align: left;
+}
+
 td {
-    height: 2rem;
+    height: 1.8rem;
     font-family: 'PT-Root-UI';
+    /*font-family: 'Noto-Mono';*/
     font-weight: normal;
     font-size: small;
     border-bottom: 1px solid #ddd;
+    border-left: 1px solid rgb(232, 232, 232);
+    font-variant-numeric: tabular-nums lining-nums;
+    text-align: right;
 }
 
 th {
     font-family: 'Vela-Sans';
     font-weight: bold;
     font-size:smaller;
-    text-align: left;
+    text-align: right;
     background-color: #d1d1d1;
     position: sticky;
     top: 0px;

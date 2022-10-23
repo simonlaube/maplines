@@ -163,12 +163,15 @@ function add_to_table(entry, sort) {
     let datetime = new Date(entry.start_time);
     // time.innerHTML = datetime.toLocaleDateString();
     time.innerHTML = datetime.toLocaleDateString().replaceAll('/', '-');
+    time.style.textAlign = "left";
     let type = row.insertCell(2);
     type.innerHTML = entry._type;
+    type.style.textAlign = "left";
     let name = row.insertCell(3);
     name.innerHTML = entry.name;
+    name.style.textAlign = "left";
     let distance = row.insertCell(4);
-    distance.innerHTML = (entry.distance / 1000).toFixed(2);
+    distance.innerHTML = (entry.distance / 1000).toFixed(2) + "km";
     let avgVel = row.insertCell(5);
     if (entry.avg_vel === null) {
         entry.avg_vel = 0.0;
@@ -192,7 +195,7 @@ function add_to_table(entry, sort) {
     creator.innerHTML = entry.creator;
 
     row.addEventListener("click", (event) => {
-        
+        if (selected_rows.length === 1 && selected_rows.includes(entry.ulid)) { return; }
         if (!event.shiftKey) {
             clear_table_selection();
         }
