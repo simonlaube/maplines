@@ -171,7 +171,7 @@ function add_to_table(entry, sort) {
     name.innerHTML = entry.name;
     name.style.textAlign = "left";
     let distance = row.insertCell(4);
-    distance.innerHTML = (entry.distance / 1000).toFixed(2) + "km";
+    distance.innerHTML = (entry.distance / 1000).toFixed(2);
     let avgVel = row.insertCell(5);
     if (entry.avg_vel === null) {
         entry.avg_vel = 0.0;

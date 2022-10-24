@@ -31,6 +31,7 @@ Tool to analyze and visualize GPS data from recorded sport activities.
 - [x] add label on map for current position in profile
 - [x] add satellite map option
 - [ ] add table export to csv
+- [ ] finish implementation of image adding with file picker
 
 ## More Distant Future Features
 - [ ] add track grouping (e.g. group all tracks belonging to a completed tour or tracks with the same route. maybe with tags?)

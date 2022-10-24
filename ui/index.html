@@ -71,10 +71,19 @@
           <div id="track-note-edit">
             <div id="edit-note-vbox">
             <!--p class="text-title">Comment:</p-->
-              <textarea class="input-field" id="comment-input" type="text"></textarea>
-              <input id="img-drop" type="file" accept="image/png, image/jpeg" ondragover="dragOverHandler(event)" ondragleave="dragLeaveHandler(event)" onmouseenter="imgDropEnter()" onmouseleave="imgDropLeave()">
-              <img id="note-img"/>
-              <div>
+              <div id="comment-input-wrapper">
+                <h1 class="center-title">Track Note</h1>
+                <textarea class="input-field" id="comment-input" type="text"></textarea>
+              </div>
+              <!--input id="img-drop" type="file" accept="image/png, image/jpeg" ondragover="dragOverHandler(event)" ondragleave="dragLeaveHandler(event)" onmouseenter="imgDropEnter()" onmouseleave="imgDropLeave()"-->
+              <!--img id="note-img"/-->
+              <div id="edit-note-hbox">
+                <div id="img-drop-wrapper">
+                  <div id="img-drop" ondragenter="imgDragEnter()" ondragleave="imgDragEnd()" onclick="openFileDialog()">Add Picture(s)</div>
+                </div>
+                <div id="img-preview-wrapper"></div>
+              </div>
+              <div id="edit-note-buttons">
                 <button id="cancel-note-edit" onclick="setNoOverlay()">Cancel</button>
                 <button id="save-note-edit" onclick="saveEditNote()">Save</button>
               </div>
@@ -104,11 +113,11 @@
               <th>Dist</th>
               <th>Vel</th>
               <th>Time</th>
-              <th>Time Total</th>
-              <th>Ele. +</th>
-              <th>Ele. -</th>
-              <th>Max E</th>
-              <th>Min E</th>
+              <th>Time Tot</th>
+              <th>E Gain</th>
+              <th>E Loss</th>
+              <th>E Max</th>
+              <th>E Min</th>
               <th>Creator</th>
             </thead>
             <tbody id="gpxTableBody"></tbody>

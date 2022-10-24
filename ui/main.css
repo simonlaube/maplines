@@ -38,16 +38,14 @@
     font-style: normal;
 }
 
-@font-face {
-    font-family: 'Noto-Mono';
-    src: url('fonts/noto-mono/NotoMono-Regular.ttf') format('truetype');
-    font-weight: bolder;
-    font-style: normal;
+h1 {
+    font-size: 16px;
+    font-weight: bold;
+    font-family: system-ui;
 }
 
-h1 {
-    font-family: 'Epilogue';
-    font-size:medium;
+.center-title {
+    justify-self: center;
 }
 
 .text-title {
@@ -160,7 +158,6 @@ body {
     display: table;
     border-collapse: collapse;
     /*margin-left: 0.2rem;*/
-    font-family: 'Epilogue';
     width: 100%;
 }
 
@@ -322,9 +319,13 @@ tr:nth-child(even) { background-color: #f2f2f2; }
 .selected-row:nth-child(even) { background-color: rgb(170, 117, 190); }*/
 .selected-row { 
     /*border-left-color: #9f2dcf;*/
-    border-left-color: #9f2dcf;
+
+
+
+    /*border-left-color: #9f2dcf;
     border-left-width: 8px;
-    border-left-style: solid;
+    border-left-style: solid;*/
+
     /*color: #5e2677;*/
     color: #6f328b;
 }
@@ -388,6 +389,7 @@ tbody tr:hover td {
 }
 #track-note-edit {
     width: 80%;
+    max-width: 1000px;
     height: 80%;
     background-color: #fff;
     display: none;
@@ -396,14 +398,51 @@ tbody tr:hover td {
     justify-content: center;
 }
 #edit-note-vbox {
+    box-sizing: border-box;
     display: grid;
-    grid-auto-rows: 40% 20% 25% auto;
+    grid-auto-rows: auto 40% 2rem;
+    justify-items: center;
     width: 100%;
     height: 100%;
+    padding: 0.6rem;
+    grid-gap: 0.2rem;
+}
+#edit-note-hbox {
+    display: grid;
+    grid-auto-columns: 50% auto;
+    grid-auto-rows: 100%;
+    width: 100%;
+}
+#comment-input-wrapper {
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    display: grid;
+    grid-template-rows: 2rem auto;
+    justify-items: center;
 }
 #comment-input {
+    padding-top: 0.2rem;
+    box-sizing: border-box;
     width: 100%;
+    max-width: 980px;
     height: 100%;
+    border-color: #ccc;
+    color: #111;
+    resize: none;
+    background: url('icons/notebook_copy_copy.png') repeat-y;
+    background-attachment: local;
+    border: none;
+    font-size: 14px;
+    line-height: 25px;
+    padding: 6px 10px;
+}
+#comment-input:focus {
+    outline: none;
+}
+#comment-input::first-line {
+    font-weight: bold;
+    font-size: 16px;
 }
 #loading-info {
     width: 180px;
@@ -413,17 +452,59 @@ tbody tr:hover td {
     position: relative;
     border-radius: 5px;
 }
-#img-drop {
-    background-color: #333;
-    /*background-image: url('Users/simonlaube/Downloads/IMG_2853.JPG');*/
-    height: 100%;
+#img-drop-wrapper {
+    box-sizing: border-box;
     width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    display: flex;
 }
+#img-drop {
+    /*background-color: #333;*/
+    /*background-image: url('Users/simonlaube/Downloads/IMG_2853.JPG');*/
+    box-sizing: border-box;
+    font-family: 'Vela-Sans';
+    font-size: 30px;
+    font-weight: 900;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    color: #888;
+    border-style: dashed;
+    border-width: 8px;
+    border-radius: 15px;
+    border-color: #888;
+    height: 80%;
+    width: 80%;
+    cursor: pointer;
+}
+#img-drop:hover {
+    color: #555;
+}
+#img-preview-wrapper {
+    box-sizing: border-box;
+    grid-column-start: 2;
+    grid-column-end: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /*grid-template-rows: repeat(50%);*/
+    grid-auto-rows: 50%;
+    grid-auto-flow: row;
+    grid-gap: 0.2rem;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
 #note-img {
     width: 100%;
     height: 100%;
     background-size: cover;
 }
+#edit-note-buttons {
+    box-sizing: border-box;
+}
+
 #loading-text {
     position: absolute;
     top: 50%;
