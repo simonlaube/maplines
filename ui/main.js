@@ -195,7 +195,11 @@ function add_to_table(entry, sort) {
     creator.innerHTML = entry.creator;
 
     row.addEventListener("click", (event) => {
-        if (selected_rows.length === 1 && selected_rows.includes(entry.ulid)) { return; }
+        // prevent track from reloading if already selected. Only reapply map bounds.
+        if (selected_rows.length === 1 && selected_rows.includes(entry.ulid)) {
+            fitMapBounds();
+            return;
+        }
         if (!event.shiftKey) {
             clear_table_selection();
         }
@@ -262,9 +266,11 @@ function toggleRowSelection(entry) {
             } else if (selected_rows.length > 1) {
                 b = [[Math.min(nb[0][0], b[0][0]), Math.min(nb[0][1], b[0][1])], [Math.max(nb[1][0], b[1][0]), Math.max(nb[1][1], b[1][1])]];
             }
-            map.fitBounds(b, {
+            currentMapBounds = b;
+            fitMapBounds();
+            /*map.fitBounds(b, {
                 padding: { top: 25, bottom: 25, left: 25, right: 25 }
-            });
+            });*/
             addPauseIcons(entry, response[0]);
         });
 
@@ -282,6 +288,13 @@ function toggleRowSelection(entry) {
 
         addTrackIcons(entry);
     }
+}
+
+var currentMapBounds;
+function fitMapBounds() {
+    map.fitBounds(currentMapBounds, {
+        padding: { top: 25, bottom: 25, left: 25, right: 25 }
+    });
 }
 
 function sortRowsDate(table, columnIndex, row_objects) {

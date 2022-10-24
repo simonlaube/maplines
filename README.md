@@ -30,6 +30,7 @@ Tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] add table filters
 - [x] add label on map for current position in profile
 - [x] add satellite map option
+- [ ] add table export to csv
 
 ## More Distant Future Features
 - [ ] add track grouping (e.g. group all tracks belonging to a completed tour or tracks with the same route. maybe with tags?)
@@ -60,6 +61,7 @@ Tool to analyze and visualize GPS data from recorded sport activities.
 - [ ] Map does not appear when reconnected to internet
 - [ ] When changes to a row are saved, the updated row is not visually selected anymore
 - [ ] very scattered elevation data still leads to inaccurate calculations
+- [ ] elevation profile not globally available
 
 - [ ] improve pause detection (pauses between only 2 points can be missed)
 

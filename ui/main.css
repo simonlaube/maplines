@@ -276,7 +276,6 @@ td {
     font-weight: normal;
     font-size: small;
     border-bottom: 1px solid #ddd;
-    border-left: 1px solid rgb(232, 232, 232);
     font-variant-numeric: tabular-nums lining-nums;
     text-align: right;
 }
@@ -298,6 +297,13 @@ tr {
 th, td {
     padding: 0.2rem;
     white-space: nowrap;
+}
+
+tr:nth-child(odd) td {
+    border-left: 1px solid rgb(240, 240, 240);
+}
+tr:nth-child(even) td {
+    border-left: 1px solid rgb(228, 228, 228);
 }
 /*
 tr {
@@ -333,6 +339,7 @@ tr:nth-child(even) { background-color: #f2f2f2; }
 tbody tr:hover * {
     background-color: #e2e2e2;
     cursor: pointer;
+    border-left: 1px solid #d9d9d9;
 }
 
 tbody .selected-row:hover * {
