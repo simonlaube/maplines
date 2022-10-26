@@ -135,7 +135,7 @@ fn main() {
       }
       _ => {}
     })
-    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses, load_track_display_data, save_track_changes, load_elevation, load_notes, join_tracks, delete_track, recalculate_track])
+    .invoke_handler(tauri::generate_handler![load_geojson, load_pauses, load_track_analysis, calculate_pauses, load_track_display_data, save_track_changes, load_elevation, load_notes, join_tracks, delete_track, recalculate_track, add_note])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 
@@ -219,17 +219,20 @@ fn load_notes(ulid: String) -> Option<Vec<TrackNote>> {
 }
 
 #[tauri::command]
-fn add_note(ulid: String, coord: (f64, f64), icon: String, comment: Option<String>, img_path: Option<String>) {
+fn add_note(ulid: String, coords: (f64, f64), icon: String, comment: Option<String>, img_paths: Option<Vec<String>>) {
+  let img_paths = match img_paths {
+    Some(p) => Some(p.iter().map(|p| PathBuf::from(p)).collect()),
+    None => None
+  };
   let new_note = TrackNote {
     id: Ulid::new().to_string(), // no time associated with note
-    coord,
+    coords,
     icon: track_note::get_icon_from_string(icon),
     comment,
-    picture: match img_path {
-      Some(s) => Some(PathBuf::from(s)),
-      None => None,
-    }
+    pictures: img_paths
   };
+  println!("{:?}", new_note);
+  return;
 
   let mut notes;
   match io::read_track_notes(&ulid) {

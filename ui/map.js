@@ -17,6 +17,7 @@ function initMap() {
 var curr_move_line = [];
 var curr_uned_pause_line = [];
 var curr_pause_line = [];
+var movable_marker_exists = false;
 
 function addTrack(ulid, move, pause, uned_pause) {
     addMove(ulid, move);
@@ -264,6 +265,22 @@ function toggleMapStyle() {
         for ([u, geom] of curr_uned_pause_line) {
             addUnedPause(u, geom);
         }
+        if (movable_marker_exists === true) {
+            map.addSource('point', {
+                'type': 'geojson',
+                'data': movableMarker
+            });
+                 
+            map.addLayer({
+                'id': 'point',
+                'type': 'circle',
+                'source': 'point',
+                'paint': {
+                'circle-radius': 10,
+                'circle-color': '#3887be'
+                }
+            });
+        }
     }, 150);
 }
 
@@ -349,4 +366,103 @@ function initMapPositionIcon() {
 function updateMapPositionIcon(long, lat) {
     // mapPositionIcon.getElement().style.display = "block";
     mapPositionIcon.setLngLat(new maplibregl.LngLat(long, lat));
+}
+
+
+
+// --------------------- Movable Marker ---------------------
+
+var canvas;
+var movableMarker;
+
+function onMove(e) {
+    var coords = e.lngLat;
+    
+    // Set a UI indicator for dragging.
+    canvas.style.cursor = 'grabbing';
+    
+    // Update the Point feature in `geojson` coordinates
+    // and call setData to the source layer `point` on it.
+    movableMarker.features[0].geometry.coordinates = [coords.lng, coords.lat];
+    map.getSource('point').setData(movableMarker);
+}
+
+function onUp(e) {
+    canvas.style.cursor = '';
+
+    
+    // Unbind mouse/touch events
+    map.off('mousemove', onMove);
+    map.off('touchmove', onMove);
+}
+
+function addMovableMarker() {
+
+    canvas = map.getCanvasContainer();
+    movableMarker = {
+        'type': 'FeatureCollection',
+        'features': [
+            {
+                'type': 'Feature',
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': [map.getCenter().lng, map.getCenter().lat]
+                }
+            }
+        ]
+    };
+    map.addSource('point', {
+        'type': 'geojson',
+        'data': movableMarker
+    });
+         
+    map.addLayer({
+        'id': 'point',
+        'type': 'circle',
+        'source': 'point',
+        'paint': {
+        'circle-radius': 10,
+        'circle-color': '#3887be'
+        }
+    });
+         
+    // When the cursor enters a feature in the point layer, prepare for dragging.
+    map.on('mouseenter', 'point', function () {
+        map.setPaintProperty('point', 'circle-color', '#3bb2d0');
+        canvas.style.cursor = 'move';
+    });
+        
+    map.on('mouseleave', 'point', function () {
+        map.setPaintProperty('point', 'circle-color', '#3887be');
+        canvas.style.cursor = '';
+    });
+        
+    map.on('mousedown', 'point', function (e) {
+        // Prevent the default map drag behavior.
+        e.preventDefault();
+        
+        canvas.style.cursor = 'grab';
+        
+        map.on('mousemove', onMove);
+        map.once('mouseup', onUp);
+    });
+        
+    map.on('touchstart', 'point', function (e) {
+        if (e.points.length !== 1) return;
+        
+        // Prevent the default map drag behavior.
+        e.preventDefault();
+        
+        map.on('touchmove', onMove);
+        map.once('touchend', onUp);
+    });
+    movable_marker_exists = true;
+}
+
+function removeMovableMarker() {
+    map.off('mousemove', onMove);
+    map.off('touchmove', onMove);
+    map.removeLayer('point');
+    map.removeSource('point');
+    movable_marker_exists = false;
 }

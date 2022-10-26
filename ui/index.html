@@ -23,26 +23,17 @@
   <body>
     <div class="grid-container">
       <div id="menu-bar">
-        <div id="table-buttons-wrapper">
-          <button id="table-button-edit" onclick="editRow()">Edit</button>
-          <button id="table-button-join" onclick="joinRows()">Join</button>
-          <button id="table-button-recalculate" onclick="recalculateRows()">Recalculate</button>
-          <button id="table-button-join" onclick="setEditNoteOverlay()">temp note overlay</button>
-        </div>
         <div id="display-buttons-wrapper">
           <button id="table-only" onclick="setDisplayState(DisplayState.Table)">|==|</button>
           <button id="table-map" onclick="setDisplayState(DisplayState.Analysis)">|=|M|</button>
           <button id="map-only" onclick="setDisplayState(DisplayState.Map)">|MM|</button>
-        </div>
-        <div id="map-buttons-wrapper">
-          <button id="satellite" onclick="toggleMapStyle()">satellite</button>
         </div>
       </div>
 
       <div id="content-wrapper">
 
         <div id="overlay">
-          <div id="row-edit">
+          <div class="overlay-box" id="row-edit">
             <p id="multiple-rows-warning" class="warning-text">Warning: Multiple rows will be edited.</p>
             <p id="invalid-characters-alert" class="alert-text">Alert: Invalid Characters.</p>
             <div class="horizontal-wrapper">
@@ -68,7 +59,7 @@
             <button id="save-row-edit" onclick="saveEditRow()">Save</button>
             <button id="delete-row-edit" onclick="deleteEditRow()">Delete</button>
           </div>
-          <div id="track-note-edit">
+          <div class="overlay-box" id="track-note-edit">
             <div id="edit-note-vbox">
             <!--p class="text-title">Comment:</p-->
               <div id="comment-input-wrapper">
@@ -83,9 +74,16 @@
                 </div>
                 <div id="img-preview-wrapper"></div>
               </div>
+              <form id="track-icon-form">
+                <select id = "track-icon-input">
+                   <option value = "Picture" selected>Picture</option>
+                   <option value = "Text">Text</option>
+                   <option value = "Other">Other</option>
+                </select>
+             </form>
               <div id="edit-note-buttons">
                 <button id="cancel-note-edit" onclick="setNoOverlay()">Cancel</button>
-                <button id="save-note-edit" onclick="saveEditNote()">Save</button>
+                <button id="save-note-edit" onclick="addEditNote()">Add</button>
               </div>
             </div>
           </div>
@@ -103,25 +101,32 @@
           <div id="ver-separator-hitbox"></div>
         </div>
 
-        <div id="gpx-table-wrapper">
-  
-          <table id="gpx-table">
-            <thead>
-              <th class="col-title-left">Date</th>
-              <th class="col-title-left">Type</th>
-              <th class="col-title-left">Name</th>
-              <th>Dist</th>
-              <th>Vel</th>
-              <th>Time</th>
-              <th>Time Tot</th>
-              <th>E Gain</th>
-              <th>E Loss</th>
-              <th>E Max</th>
-              <th>E Min</th>
-              <th>Creator</th>
-            </thead>
-            <tbody id="gpxTableBody"></tbody>
-          </table>
+        <div id="table-box">
+          <div id="table-buttons-wrapper">
+            <button id="table-button-edit" onclick="editRow()">Edit</button>
+            <button id="table-button-join" onclick="joinRows()">Join</button>
+            <button id="table-button-recalculate" onclick="recalculateRows()">Recalculate</button>
+            <button id="table-button-join" onclick="setEditNoteOverlay()">temp note overlay</button>
+          </div>
+          <div id="gpx-table-wrapper">
+            <table id="gpx-table">
+              <thead>
+                <th class="col-title-left">Date</th>
+                <th class="col-title-left">Type</th>
+                <th class="col-title-left">Name</th>
+                <th>Dist</th>
+                <th>Vel</th>
+                <th>Time</th>
+                <th>Time Tot</th>
+                <th>E Gain</th>
+                <th>E Loss</th>
+                <th>E Max</th>
+                <th>E Min</th>
+                <th>Creator</th>
+              </thead>
+              <tbody id="gpxTableBody"></tbody>
+            </table>
+          </div>
         </div>
 
         <div id="graph-wrapper">
@@ -130,14 +135,28 @@
         <script type="text/javascript" src="graph.js"></script>
         <!--script type="text/javascript" src="chart.js"></script-->
 
-        <div id="map-wrapper">
-          <div id="map"></div>
+        <div id="map-box" class="box-buttons">
+          <div id="map-buttons-wrapper">
+            <button id="satellite" onclick="toggleMapStyle()">satellite</button>
+            <button id="add-note-button" onclick="addNote()">Add Note</button>
+          </div>
+          <div id="map-wrapper">
+            <div id="map"></div>
+            <div id="map-overlay-box">
+              <p class="text-title">Drag the marker to the note location.</p>
+              <div>
+                <button onclick="setEditNoteOverlay()">Add</button>
+                <button onclick="setNoOverlay()">Cancel</button>
+              </div>
+            </div>
+          </div>
         </div>
+        
       </div>
       
-      <div id="button-wrapper-footer">
+      <!--div id="button-wrapper-footer">
         <button id="reload-tbl-btn" onclick="reload_table()">Reload Tracks</button>
-      </div>
+      </div-->
     </div>
   </body>
 </html>

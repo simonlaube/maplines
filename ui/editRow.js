@@ -128,7 +128,6 @@ function focusInput(field) {
 }
 
 function checkInput(field) {
-    console.log("check input");
     let inputField;
     let button = document.getElementById('save-row-edit');
     if (field === 'activity') {

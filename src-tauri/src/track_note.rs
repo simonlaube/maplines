@@ -5,10 +5,10 @@ use serde::{Serialize, Deserialize};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TrackNote {
     pub id: String,
-    pub coord: (f64, f64),
+    pub coords: (f64, f64),
     pub icon: TrackIcon,
     pub comment: Option<String>,
-    pub picture: Option<PathBuf>,
+    pub pictures: Option<Vec<PathBuf>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

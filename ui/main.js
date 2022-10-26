@@ -27,6 +27,7 @@ const OverlayState = {
     NoteEdit: 'NoteEdit',
     Loading: 'Loading',
     Settings: 'Settings',
+    AddNote: "AddNote",
 };
 var currentOverlayState = OverlayState.None;
 
@@ -37,7 +38,6 @@ function init() {
     reloadTable();
     initMap();
     initMapPositionIcon();
-    initDropListener();
     selected_rows = [];
 
     let bTableMap = document.getElementById("table-map");
@@ -318,6 +318,12 @@ function comparatorDate(a, b) {
 }
 
 function setNoOverlay() {
+    if (currentOverlayState === OverlayState.NoteEdit) {
+        currentOverlayState = OverlayState.None;
+        deactivateNoteEdit();
+        deactivateOverlay();
+        return;
+    }
     if (currentOverlayState !== OverlayState.None) {
         currentOverlayState = OverlayState.None;
         deactivateRowEdit();
@@ -325,6 +331,7 @@ function setNoOverlay() {
         deactivateLoading();
         // TODO: deactivate all other possible overlay menus
         deactivateOverlay();
+        deactivateAddNote();
         // activateMenuBar();
     }
 }
@@ -339,8 +346,9 @@ function setEditRowOverlay() {
 }
 
 function setEditNoteOverlay() {
-    if (currentOverlayState === OverlayState.None) {
+    if (currentOverlayState === OverlayState.AddNote) {
         currentOverlayState = OverlayState.NoteEdit;
+        deactivateAddNote();
         activateOverlay();
         activateNoteEdit();
     }
@@ -352,6 +360,14 @@ function setLoadingInfoOverlay() {
     }
     activateOverlay();
     activateLoading();
+}
+
+function setAddNoteOverlay() {
+    if (currentOverlayState === OverlayState.None) {
+        currentOverlayState = OverlayState.AddNote;
+    }
+    activateAddNote();
+    activateOverlay();
 }
 
 function activateOverlay() {
@@ -429,6 +445,26 @@ function activateLoading() {
 function deactivateLoading() {
     let loading = document.getElementById('loading-info');
     loading.style.display = "";
+}
+
+function activateAddNote() {
+    let map = document.getElementById('map-box');
+    map.style.zIndex = "8";
+    let button = document.getElementById('add-note-button');
+    button.classList.add('deactivated-button');
+    let overlayBox = document.getElementById('map-overlay-box');
+    overlayBox.style.display = "flex";
+    addMovableMarker();
+}
+
+function deactivateAddNote() {
+    let map = document.getElementById('map-box');
+    map.style.zIndex = "";
+    let button = document.getElementById('add-note-button');
+    button.classList.remove('deactivated-button');
+    let overlayBox = document.getElementById('map-overlay-box');
+    overlayBox.style.display = "";
+    removeMovableMarker();
 }
 
 function setDisplayState(state) {
