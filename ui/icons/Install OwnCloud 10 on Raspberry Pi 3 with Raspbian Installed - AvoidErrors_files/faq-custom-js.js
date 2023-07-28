@@ -1,1 +1,0 @@
-jQuery(window).load(function(){jQuery(".ui-accordion h3  span").removeClass("ui-icon");});
