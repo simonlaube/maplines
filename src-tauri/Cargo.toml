@@ -24,7 +24,7 @@ tauri = { version = "1.0.5", features = ["dialog-all", "fs-read-file", "fs-remov
 dirs = "4.0.0"
 chrono = "0.4.19"
 geo = "0.22.1"
-geo-types = "0.7.6"
+geo-types = "0.7.8"
 # gpx = { version = "0.8.6", features = ["use-serde"] }
 gpx = { git = "https://github.com/georust/gpx", rev = "6e3da64" }
 geojson = "0.23.0"

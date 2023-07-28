@@ -220,6 +220,7 @@ fn load_notes(ulid: String) -> Option<Vec<TrackNote>> {
 
 #[tauri::command]
 fn add_note(ulid: String, coords: (f64, f64), icon: String, comment: Option<String>, img_paths: Option<Vec<String>>) {
+  println!("{:?}", img_paths);
   let img_paths = match img_paths {
     Some(p) => Some(p.iter().map(|p| PathBuf::from(p)).collect()),
     None => None
@@ -229,10 +230,8 @@ fn add_note(ulid: String, coords: (f64, f64), icon: String, comment: Option<Stri
     coords,
     icon: track_note::get_icon_from_string(icon),
     comment,
-    pictures: img_paths
+    pictures: img_paths.clone()
   };
-  println!("{:?}", new_note);
-  return;
 
   let mut notes;
   match io::read_track_notes(&ulid) {

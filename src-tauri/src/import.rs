@@ -18,7 +18,7 @@ use crate::io::{write_geojson, write_gpx, write_track_analysis};
 
 pub fn gpx(gpx_path: &PathBuf) -> Result<TrackAnalysis, MaplineError> {
     let file = File::open(gpx_path).unwrap();
-    let reader = BufReader::new(file);
+    let reader = BufReader::new(BufReader::new(file));
     let gpx = read(reader).unwrap(); // TODO: remove unwrap
     let geojson = arrange_display(&gpx, None, None);
     

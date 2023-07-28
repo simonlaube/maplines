@@ -1,4 +1,4 @@
-
+var trackNotes = [];
 function initMap() {
     map = new maplibregl.Map({
         container: 'map', // container id
@@ -211,6 +211,34 @@ function addPauseIcons(entry, pauses) {
         // add marker to map
         new maplibregl.Marker(el)
         .setLngLat([p.coord_before[0] + (p.coord_after[0] - p.coord_before[0]) / 2, p.coord_before[1] + (p.coord_after[1] - p.coord_before[1]) / 2])
+        .addTo(map);
+    });
+}
+
+function addTrackNotes(entry, notes) {
+    notes.forEach(n => {
+        var el = document.createElement('div');
+        el.className = 'track-note' + entry.ulid;
+        el.classList.add('track-note');
+
+        var size = 15;
+        if (n.icon === "Picture") {
+            el.style.backgroundImage = "url('icons/picture.png')";
+        } else if (n.icon === "Text") {
+            el.style.backgroundImage = "url('icons/text.png')";
+        } else {
+            el.style.backgroundImage = "url('icons/info.png')";
+        }
+        el.style.width = size + 'px';
+        el.style.height = size + 'px';
+        el.addEventListener('click', function () {
+            // TODO: open note display
+            displayNote(n);
+        });
+            
+        // add marker to map
+        new maplibregl.Marker(el)
+        .setLngLat(n.coords)
         .addTo(map);
     });
 }

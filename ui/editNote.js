@@ -23,7 +23,13 @@ function addEditNote() {
     console.log(trackIcon);
     console.log(imgPreviewPaths);
     // TODO: Clear all input fields (comment, pitcures, ...)
-    invoke('add_note', { ulid: selected_rows[0], coords: coords, icon: trackIcon, comment: comment, img_paths: imgPreviewPaths});
+    invoke('add_note', { ulid: selected_rows[0], coords: coords, icon: trackIcon, comment: comment, imgPaths: imgPreviewPaths})
+    .then((response) => {
+        imgPreviewPaths = [];
+        document.getElementById('comment-input').value = "";
+        document.getElementById("track-icon-input").value = "Picture";
+        document.getElementById("img-preview-wrapper").innerHTML = "";
+    })
 }
 
 async function openFileDialog() {

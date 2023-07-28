@@ -45,7 +45,7 @@ pub fn track_elevation(ulid: &str) -> PathBuf {
 
 pub fn track_notes(ulid: &str) -> PathBuf {
     let mut notes_path = track(ulid);
-    notes_path.push("notes");
+    notes_path.push("notes.json");
     notes_path
 
 }

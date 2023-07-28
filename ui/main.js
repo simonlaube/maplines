@@ -27,7 +27,8 @@ const OverlayState = {
     NoteEdit: 'NoteEdit',
     Loading: 'Loading',
     Settings: 'Settings',
-    AddNote: "AddNote",
+    AddNote: 'AddNote',
+    DisplayNote: 'DisplayNote',
 };
 var currentOverlayState = OverlayState.None;
 
@@ -285,6 +286,12 @@ function toggleRowSelection(entry) {
                 showMapPositionIcon = false;
             }
         });
+        invoke('load_notes', { ulid: entry.ulid })
+        .then(async (response) => {
+            if (response !== null) {
+                addTrackNotes(entry, response);
+            }
+        });
 
         addTrackIcons(entry);
     }
@@ -329,6 +336,7 @@ function setNoOverlay() {
         deactivateRowEdit();
         deactivateNoteEdit();
         deactivateLoading();
+        deactivateNoteDisplay();
         // TODO: deactivate all other possible overlay menus
         deactivateOverlay();
         deactivateAddNote();
@@ -352,6 +360,14 @@ function setEditNoteOverlay() {
         activateOverlay();
         activateNoteEdit();
     }
+}
+
+function setDisplayNoteOverlay() {
+    if (currentOverlayState === OverlayState.None) {
+        currentOverlayState = OverlayState.DisplayNote;
+    }
+    activateOverlay();
+    activateNoteDisplay();
 }
 
 function setLoadingInfoOverlay() {
@@ -465,6 +481,16 @@ function deactivateAddNote() {
     let overlayBox = document.getElementById('map-overlay-box');
     overlayBox.style.display = "";
     removeMovableMarker();
+}
+
+function activateNoteDisplay() {
+    let loading = document.getElementById('track-note-display');
+    loading.style.display = "flex";
+}
+
+function deactivateNoteDisplay() {
+    let loading = document.getElementById('track-note-display');
+    loading.style.display = "";
 }
 
 function setDisplayState(state) {
